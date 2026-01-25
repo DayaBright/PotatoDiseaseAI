@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tesis.potatodiseaseai.data.tflite.ImageClassifier
+import com.tesis.potatodiseaseai.data.tflite.ImageClassifierHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,48 +24,58 @@ data class ScannerUiState(
 )
 
 class ScannerViewModel(private val context: Context? = null) : ViewModel() {
+
     private val _uiState = MutableStateFlow(ScannerUiState())
     val uiState: StateFlow<ScannerUiState> = _uiState.asStateFlow()
 
-    private var classifier: ImageClassifier? = null
+    private var classifier: ImageClassifierHelper? = null
 
     init {
-        if (context != null) {
-            classifier = ImageClassifier(context)
+        context?.let {
+            classifier = ImageClassifierHelper(it)
         }
     }
 
     fun toggleFlash() {
-        _uiState.value = _uiState.value.copy(flashEnabled = !_uiState.value.flashEnabled)
+        _uiState.value =
+            _uiState.value.copy(flashEnabled = !_uiState.value.flashEnabled)
     }
 
     fun startCapture() {
-        _uiState.value = _uiState.value.copy(isCapturing = true, error = null)
+        _uiState.value =
+            _uiState.value.copy(isCapturing = true, error = null)
     }
 
     fun onCaptureSuccess(uri: Uri?) {
-        _uiState.value = _uiState.value.copy(isCapturing = false, lastPhotoUri = uri)
-        if (uri != null) {
-            classifyImage(uri)
-        }
+        _uiState.value =
+            _uiState.value.copy(isCapturing = false, lastPhotoUri = uri)
+
+        uri?.let { classifyImage(it) }
     }
 
     fun onCaptureError(message: String) {
-        _uiState.value = _uiState.value.copy(isCapturing = false, error = message)
+        _uiState.value =
+            _uiState.value.copy(isCapturing = false, error = message)
     }
 
     private fun classifyImage(uri: Uri) {
-        if (classifier == null || context == null) {
-            _uiState.value = _uiState.value.copy(error = "Clasificador no disponible")
+        val localContext = context
+        val localClassifier = classifier
+
+        if (localContext == null || localClassifier == null) {
+            _uiState.value = _uiState.value.copy(
+                error = "Clasificador no disponible"
+            )
             return
         }
 
         viewModelScope.launch(Dispatchers.Default) {
             try {
-                _uiState.value = _uiState.value.copy(isClassifying = true, error = null)
+                _uiState.value =
+                    _uiState.value.copy(isClassifying = true, error = null)
 
-                val bitmap = loadBitmapFromUri(uri)
-                val result = classifier!!.classify(bitmap)
+                val bitmap = loadBitmapFromUri(localContext, uri)
+                val result = localClassifier.classify(bitmap)
 
                 _uiState.value = _uiState.value.copy(
                     classification = result.label,
@@ -81,13 +91,13 @@ class ScannerViewModel(private val context: Context? = null) : ViewModel() {
         }
     }
 
-    private fun loadBitmapFromUri(uri: Uri): Bitmap {
-        val inputStream = context?.contentResolver?.openInputStream(uri)
+    private fun loadBitmapFromUri(context: Context, uri: Uri): Bitmap {
+        val inputStream = context.contentResolver.openInputStream(uri)
         return BitmapFactory.decodeStream(inputStream)
     }
 
     override fun onCleared() {
         super.onCleared()
-        classifier?.close()
+        classifier?.clear()
     }
 }
