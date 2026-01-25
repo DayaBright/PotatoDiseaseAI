@@ -1,0 +1,8 @@
+Potato___bacterial_wilt
+Potato___early_blight
+Potato___healthy
+Potato___late_blight
+Potato___leafroll_virus
+Potato___mosaic_virus
+Potato___nematode
+Potato___pests
