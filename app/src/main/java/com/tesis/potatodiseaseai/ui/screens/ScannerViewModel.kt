@@ -20,7 +20,8 @@ data class ScannerUiState(
     val error: String? = null,
     val classification: String? = null,
     val confidence: Float? = null,
-    val isClassifying: Boolean = false
+    val isClassifying: Boolean = false,
+    val shouldNavigateToResult: Boolean = false
 )
 
 class ScannerViewModel(private val context: Context? = null) : ViewModel() {
@@ -37,25 +38,20 @@ class ScannerViewModel(private val context: Context? = null) : ViewModel() {
     }
 
     fun toggleFlash() {
-        _uiState.value =
-            _uiState.value.copy(flashEnabled = !_uiState.value.flashEnabled)
+        _uiState.value = _uiState.value.copy(flashEnabled = !_uiState.value.flashEnabled)
     }
 
     fun startCapture() {
-        _uiState.value =
-            _uiState.value.copy(isCapturing = true, error = null)
+        _uiState.value = _uiState.value.copy(isCapturing = true, error = null)
     }
 
     fun onCaptureSuccess(uri: Uri?) {
-        _uiState.value =
-            _uiState.value.copy(isCapturing = false, lastPhotoUri = uri)
-
+        _uiState.value = _uiState.value.copy(isCapturing = false, lastPhotoUri = uri)
         uri?.let { classifyImage(it) }
     }
 
     fun onCaptureError(message: String) {
-        _uiState.value =
-            _uiState.value.copy(isCapturing = false, error = message)
+        _uiState.value = _uiState.value.copy(isCapturing = false, error = message)
     }
 
     private fun classifyImage(uri: Uri) {
@@ -63,16 +59,13 @@ class ScannerViewModel(private val context: Context? = null) : ViewModel() {
         val localClassifier = classifier
 
         if (localContext == null || localClassifier == null) {
-            _uiState.value = _uiState.value.copy(
-                error = "Clasificador no disponible"
-            )
+            _uiState.value = _uiState.value.copy(error = "Clasificador no disponible")
             return
         }
 
         viewModelScope.launch(Dispatchers.Default) {
             try {
-                _uiState.value =
-                    _uiState.value.copy(isClassifying = true, error = null)
+                _uiState.value = _uiState.value.copy(isClassifying = true, error = null)
 
                 val bitmap = loadBitmapFromUri(localContext, uri)
                 val result = localClassifier.classify(bitmap)
@@ -80,7 +73,8 @@ class ScannerViewModel(private val context: Context? = null) : ViewModel() {
                 _uiState.value = _uiState.value.copy(
                     classification = result.label,
                     confidence = result.confidence,
-                    isClassifying = false
+                    isClassifying = false,
+                    shouldNavigateToResult = true
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -89,6 +83,10 @@ class ScannerViewModel(private val context: Context? = null) : ViewModel() {
                 )
             }
         }
+    }
+
+    fun onNavigatedToResult() {
+        _uiState.value = _uiState.value.copy(shouldNavigateToResult = false)
     }
 
     private fun loadBitmapFromUri(context: Context, uri: Uri): Bitmap {

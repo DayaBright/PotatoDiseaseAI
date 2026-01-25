@@ -6,7 +6,7 @@ plugins {
 android {
     namespace = "com.tesis.potatodiseaseai"
     compileSdk {
-        version = release(34)
+        version = release(36)
     }
 
     defaultConfig {
@@ -76,6 +76,6 @@ dependencies {
     // TensorFlow Lite
     implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.4")
 
-
-
+    //Coil para carga de imágenes
+    implementation("io.coil-kt:coil-compose:2.5.0")
 }

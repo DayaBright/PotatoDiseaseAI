@@ -10,6 +10,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     data object Scanner : Screen("scanner", "Escanear", Icons.Outlined.Camera)
     data object History : Screen("history", "Historial", Icons.Outlined.History)
     data object Help : Screen("help", "Ayuda", Icons.Outlined.Help)
+    data object Result : Screen("result", "Resultado", Icons.Outlined.Help)
 
     companion object {
         val bottomTabs = listOf(Scanner, History, Help)
