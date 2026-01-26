@@ -1,7 +1,6 @@
 package com.tesis.potatodiseaseai.ui.screens
 
 import android.net.Uri
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,15 +18,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.model.DiseaseDatabase
 import com.tesis.potatodiseaseai.utils.FileUtils
 import com.tesis.potatodiseaseai.utils.ImageLoaderConfig
-import kotlinx.coroutines.launch // ✅ AGREGADO
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +41,7 @@ fun ResultScreen(
     onDeleted: () -> Unit
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope() // ✅ AGREGADO
+    val scope = rememberCoroutineScope()
     val database = remember { AppDatabase.getDatabase(context) }
     
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -52,8 +53,8 @@ fun ResultScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Eliminar detección") },
-            text = { Text("¿Estás seguro de que deseas eliminar esta detección?") },
+            title = { Text(stringResource(R.string.result_delete_title)) },
+            text = { Text(stringResource(R.string.result_delete_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -74,12 +75,12 @@ fun ResultScreen(
                         }
                     }
                 ) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.history_delete_confirm), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.history_delete_cancel))
                 }
             }
         )
@@ -88,10 +89,10 @@ fun ResultScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Resultado del Análisis") },
+                title = { Text(stringResource(R.string.result_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Volver")
+                        Icon(Icons.Default.ArrowBack, stringResource(R.string.result_back))
                     }
                 }
             )
@@ -119,7 +120,7 @@ fun ResultScreen(
                             .memoryCacheKey(imageUri)
                             .diskCacheKey(imageUri)
                             .build(),
-                        contentDescription = "Imagen analizada",
+                        contentDescription = stringResource(R.string.cd_analyzed_image),
                         imageLoader = ImageLoaderConfig.getImageLoader(context),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
@@ -161,9 +162,12 @@ fun ResultScreen(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Confianza: ${String.format("%.1f", confidence * 100)}%",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+    text = stringResource(
+        R.string.result_confidence,
+        String.format("%.1f", confidence * 100)
+    ),
+    style = MaterialTheme.typography.bodyLarge
+)
                         }
                     }
                 }
@@ -174,7 +178,7 @@ fun ResultScreen(
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Mapa de Atención (Grad-CAM)",
+                            text = stringResource(R.string.result_gradcam_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -188,7 +192,7 @@ fun ResultScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Próximamente: Visualización Grad-CAM",
+                                text = stringResource(R.string.result_gradcam_placeholder),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -201,7 +205,7 @@ fun ResultScreen(
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Recomendaciones",
+                            text = stringResource(R.string.result_recommendations_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -239,7 +243,7 @@ fun ResultScreen(
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Eliminar detección")
+                    Text(stringResource(R.string.result_delete_button))
                 }
             }
         }

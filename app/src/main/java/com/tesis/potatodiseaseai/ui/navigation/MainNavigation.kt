@@ -2,16 +2,12 @@ package com.tesis.potatodiseaseai.ui.navigation
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.tesis.potatodiseaseai.ui.screens.*
-import java.net.URLDecoder
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 
 @Composable
 fun MainNavigation() {
@@ -22,7 +18,7 @@ fun MainNavigation() {
             val backStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = backStackEntry?.destination?.route
             
-            if (currentRoute?.startsWith("result") != true) {
+            if (currentRoute?.startsWith(NavigationHelper.Routes.RESULT_BASE) != true) {
                 NavigationBar {
                     Screen.bottomTabs.forEach { screen ->
                         NavigationBarItem(
@@ -46,27 +42,22 @@ fun MainNavigation() {
     ) { padding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Scanner.route
+            startDestination = NavigationHelper.Routes.SCANNER
         ) {
-            composable(Screen.Scanner.route) { 
-                // viewModel() sin parámetros (usa ViewModelProvider por defecto)
+            // Scanner
+            composable(NavigationHelper.Routes.SCANNER) { 
                 val vm: ScannerViewModel = viewModel()
                 val uiState by vm.uiState.collectAsState()
                 
                 LaunchedEffect(uiState.shouldNavigateToResult) {
                     if (uiState.shouldNavigateToResult) {
-                        val encodedUri = URLEncoder.encode(
-                            uiState.lastPhotoUri.toString(),
-                            StandardCharsets.UTF_8.toString()
+                        val route = NavigationHelper.buildResultRoute(
+                            imageUri = uiState.lastPhotoUri.toString(),
+                            disease = uiState.classification ?: "",
+                            confidence = uiState.confidence ?: 0f,
+                            detectionId = uiState.savedDetectionId ?: 0L
                         )
-                        val disease = URLEncoder.encode(
-                            uiState.classification ?: "",
-                            StandardCharsets.UTF_8.toString()
-                        )
-                        val confidence = uiState.confidence ?: 0f
-                        val detectionId = uiState.savedDetectionId ?: 0L
-                        
-                        navController.navigate("result/$encodedUri/$disease/$confidence/$detectionId")
+                        navController.navigate(route)
                         vm.onNavigatedToResult()
                     }
                 }
@@ -74,47 +65,49 @@ fun MainNavigation() {
                 ScannerScreen(padding) 
             }
             
-            composable(Screen.History.route) { 
+            // History
+            composable(NavigationHelper.Routes.HISTORY) { 
                 HistoryScreen(
                     innerPadding = padding,
                     onNavigateToResult = { imageUri, disease, confidence, detectionId ->
-                        val encodedUri = URLEncoder.encode(
-                            imageUri,
-                            StandardCharsets.UTF_8.toString()
+                        val route = NavigationHelper.buildResultRoute(
+                            imageUri = imageUri,
+                            disease = disease,
+                            confidence = confidence,
+                            detectionId = detectionId
                         )
-                        val encodedDisease = URLEncoder.encode(
-                            disease,
-                            StandardCharsets.UTF_8.toString()
-                        )
-                        navController.navigate("result/$encodedUri/$encodedDisease/$confidence/$detectionId")
+                        navController.navigate(route)
                     }
                 )
             }
             
-            composable(Screen.Help.route) { HelpScreen(padding) }
+            // Help
+            composable(NavigationHelper.Routes.HELP) { 
+                HelpScreen(padding) 
+            }
             
+            // Result
             composable(
-                route = "result/{imageUri}/{disease}/{confidence}/{detectionId}",
+                route = NavigationHelper.Routes.RESULT_FULL,
                 arguments = listOf(
-                    navArgument("imageUri") { type = NavType.StringType },
-                    navArgument("disease") { type = NavType.StringType },
-                    navArgument("confidence") { type = NavType.FloatType },
-                    navArgument("detectionId") { type = NavType.LongType }
+                    navArgument(NavigationHelper.Args.IMAGE_URI) { type = NavType.StringType },
+                    navArgument(NavigationHelper.Args.DISEASE) { type = NavType.StringType },
+                    navArgument(NavigationHelper.Args.CONFIDENCE) { type = NavType.FloatType },
+                    navArgument(NavigationHelper.Args.DETECTION_ID) { type = NavType.LongType }
                 )
             ) { backStackEntry ->
-                val encodedUri = backStackEntry.arguments?.getString("imageUri") ?: ""
-                val encodedDisease = backStackEntry.arguments?.getString("disease") ?: ""
-                val detectionId = backStackEntry.arguments?.getLong("detectionId")
+                val encodedUri = backStackEntry.arguments?.getString(NavigationHelper.Args.IMAGE_URI) ?: ""
+                val encodedDisease = backStackEntry.arguments?.getString(NavigationHelper.Args.DISEASE) ?: ""
+                val confidence = backStackEntry.arguments?.getFloat(NavigationHelper.Args.CONFIDENCE) ?: 0f
+                val detectionId = backStackEntry.arguments?.getLong(NavigationHelper.Args.DETECTION_ID)
                 
                 ResultScreen(
-                    imageUri = URLDecoder.decode(encodedUri, StandardCharsets.UTF_8.toString()),
-                    disease = URLDecoder.decode(encodedDisease, StandardCharsets.UTF_8.toString()),
-                    confidence = backStackEntry.arguments?.getFloat("confidence") ?: 0f,
+                    imageUri = NavigationHelper.decodeUri(encodedUri),
+                    disease = NavigationHelper.decodeUri(encodedDisease),
+                    confidence = confidence,
                     detectionId = detectionId,
                     onBack = { navController.popBackStack() },
-                    onDeleted = {
-                        navController.popBackStack()
-                    }
+                    onDeleted = { navController.popBackStack() }
                 )
             }
         }

@@ -1,3 +1,54 @@
 <resources>
     <string name="app_name">PotatoDiseaseAI</string>
+    
+    <!-- Navigation -->
+    <string name="nav_scanner">Escanear</string>
+    <string name="nav_history">Historial</string>
+    <string name="nav_help">Ayuda</string>
+    <string name="nav_result">Resultado</string>
+    
+    <!-- Scanner Screen -->
+    <string name="scanner_capture">Capturar</string>
+    <string name="scanner_flash">Flash</string>
+    <string name="scanner_gallery">Galería</string>
+    <string name="scanner_error_capture">Error al capturar</string>
+    <string name="scanner_error_resources">Recursos no disponibles</string>
+    <string name="scanner_error_save">Error al guardar imagen</string>
+    
+    <!-- History Screen -->
+    <string name="history_title">Historial de Análisis</string>
+    <string name="history_total">Total de análisis</string>
+    <string name="history_storage">Almacenamiento</string>
+    <string name="history_empty_title">No hay análisis guardados</string>
+    <string name="history_empty_subtitle">Captura una foto desde el escáner</string>
+    <string name="history_confidence">Confianza: %1$s%%</string>
+    <string name="history_delete_title">Eliminar análisis</string>
+    <string name="history_delete_message">¿Estás seguro de que deseas eliminar este análisis de %1$s?</string>
+    <string name="history_delete_confirm">Eliminar</string>
+    <string name="history_delete_cancel">Cancelar</string>
+    
+    <!-- Result Screen -->
+    <string name="result_title">Resultado del Análisis</string>
+    <string name="result_back">Volver</string>
+    <string name="result_confidence">Confianza: %1$s%%</string>
+    <string name="result_gradcam_title">Mapa de Atención (Grad-CAM)</string>
+    <string name="result_gradcam_placeholder">Próximamente: Visualización Grad-CAM</string>
+    <string name="result_recommendations_title">Recomendaciones</string>
+    <string name="result_delete_button">Eliminar detección</string>
+    <string name="result_delete_title">Eliminar detección</string>
+    <string name="result_delete_message">¿Estás seguro de que deseas eliminar esta detección?</string>
+    
+    <!-- Help Screen -->
+    <string name="help_title">Pantalla de Ayuda</string>
+    
+    <!-- Common -->
+    <string name="common_delete">Eliminar</string>
+    <string name="common_cancel">Cancelar</string>
+    <string name="common_error">Error</string>
+    <string name="common_loading">Cargando…</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_preview">Vista previa</string>
+    <string name="cd_analyzed_image">Imagen analizada</string>
+    <string name="cd_delete">Eliminar</string>
 </resources>

@@ -16,9 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.core.content.ContextCompat
+import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.ui.screens.components.CameraPreview
 import com.tesis.potatodiseaseai.utils.FileUtils
 import java.io.File
@@ -40,7 +42,7 @@ fun ScannerScreen(innerPadding: PaddingValues) {
 
     LaunchedEffect(Unit) {
         cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-        // ✅ CRÍTICO: Limpiar archivos temporales al iniciar
+        // Limpiar archivos temporales al iniciar
         FileUtils.cleanTempFiles(context)
     }
 
@@ -87,12 +89,12 @@ fun ScannerScreen(innerPadding: PaddingValues) {
                             val uri = android.net.Uri.fromFile(tempFile)
                             vm.onCaptureSuccess(uri)
                             
-                            // ✅ CRÍTICO: Eliminar archivo temporal después de procesarlo
+                            // Eliminar archivo temporal después de procesarlo
                             tempFile.deleteOnExit()
                         }
                         override fun onError(exception: ImageCaptureException) {
-                            vm.onCaptureError(exception.message ?: "Error al capturar")
-                            // ✅ CRÍTICO: Eliminar archivo temporal en caso de error
+                            vm.onCaptureError(exception.message ?: context.getString(R.string.scanner_error_capture))
+                            // Eliminar archivo temporal en caso de error
                             tempFile.delete()
                         }
                     }
@@ -104,7 +106,7 @@ fun ScannerScreen(innerPadding: PaddingValues) {
         ) {
             Icon(
                 imageVector = Icons.Outlined.PhotoCamera,
-                contentDescription = "Capturar",
+                contentDescription = stringResource(R.string.scanner_capture),
                 modifier = Modifier.size(48.dp)
             )
         }
@@ -122,7 +124,7 @@ fun ScannerScreen(innerPadding: PaddingValues) {
         ) {
             Icon(
                 imageVector = if (uiState.flashEnabled) Icons.Outlined.FlashOn else Icons.Outlined.FlashOff,
-                contentDescription = "Flash"
+                contentDescription = stringResource(R.string.scanner_flash)
             )
         }
 
@@ -140,7 +142,7 @@ fun ScannerScreen(innerPadding: PaddingValues) {
         ) {
             Icon(
                 imageVector = Icons.Outlined.PhotoLibrary,
-                contentDescription = "Galería"
+                contentDescription = stringResource(R.string.scanner_gallery)
             )
         }
 

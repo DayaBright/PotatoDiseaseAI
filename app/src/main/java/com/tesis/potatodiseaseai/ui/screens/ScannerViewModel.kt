@@ -10,6 +10,7 @@ import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.database.DetectionEntity
 import com.tesis.potatodiseaseai.data.model.DiseaseDatabase
 import com.tesis.potatodiseaseai.data.tflite.ImageClassifierHelper
+import com.tesis.potatodiseaseai.utils.ErrorHandler
 import com.tesis.potatodiseaseai.utils.FileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,13 +30,11 @@ data class ScannerUiState(
     val savedDetectionId: Long? = null
 )
 
-// ✅ CRÍTICO: Usar AndroidViewModel para applicationContext
 class ScannerViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(ScannerUiState())
     val uiState: StateFlow<ScannerUiState> = _uiState.asStateFlow()
 
-    // ✅ CRÍTICO: Usar applicationContext en lugar de context
     private var classifier: ImageClassifierHelper? = ImageClassifierHelper(application.applicationContext)
     private val database = AppDatabase.getDatabase(application.applicationContext)
 
@@ -53,14 +52,26 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun onCaptureError(message: String) {
-        _uiState.value = _uiState.value.copy(isCapturing = false, error = message)
+        _uiState.value = _uiState.value.copy(
+            isCapturing = false,
+            error = ErrorHandler.getUserMessage(
+                ErrorHandler.handleException(
+                    Exception(message),
+                    "Captura de imagen"
+                )
+            )
+        )
     }
 
     private fun classifyAndSave(sourceUri: Uri) {
         val localClassifier = classifier
 
-        if (localClassifier == null) {
-            _uiState.value = _uiState.value.copy(error = "Recursos no disponibles")
+        if (localClassifier == null || !localClassifier.isReady()) {
+            _uiState.value = _uiState.value.copy(
+                error = ErrorHandler.getUserMessage(
+                    com.tesis.potatodiseaseai.utils.AppError.ClassificationError()
+                )
+            )
             return
         }
 
@@ -80,11 +91,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 )
                 
                 if (savedUri == null) {
-                    _uiState.value = _uiState.value.copy(
-                        error = "Error al guardar imagen",
-                        isClassifying = false
-                    )
-                    return@launch
+                    throw java.io.IOException("No se pudo guardar la imagen")
                 }
 
                 // 3. Guardar en Room
@@ -107,12 +114,12 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                     savedDetectionId = detectionId
                 )
             } catch (e: Exception) {
+                val appError = ErrorHandler.handleException(e, "Clasificación y guardado")
                 _uiState.value = _uiState.value.copy(
-                    error = "Error: ${e.message}",
+                    error = ErrorHandler.getUserMessage(appError),
                     isClassifying = false
                 )
             } finally {
-                // ✅ CRÍTICO: Reciclar bitmap
                 bitmap?.recycle()
             }
         }
@@ -123,9 +130,13 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun loadBitmapFromUri(uri: Uri): Bitmap {
-        val inputStream = getApplication<Application>().contentResolver.openInputStream(uri)
-        return BitmapFactory.decodeStream(inputStream).also {
-            inputStream?.close()
+        return try {
+            val inputStream = getApplication<Application>().contentResolver.openInputStream(uri)
+            BitmapFactory.decodeStream(inputStream).also {
+                inputStream?.close()
+            }
+        } catch (e: Exception) {
+            throw java.io.IOException("Error al cargar imagen: ${e.message}")
         }
     }
 

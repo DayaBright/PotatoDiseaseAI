@@ -1,7 +1,6 @@
 package com.tesis.potatodiseaseai.ui.screens
 
 import android.net.Uri
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,13 +17,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.database.DetectionEntity
+import com.tesis.potatodiseaseai.ui.theme.Dimensions
 import com.tesis.potatodiseaseai.ui.theme.PotatoDiseaseAITheme
 import com.tesis.potatodiseaseai.utils.DateUtils
 import com.tesis.potatodiseaseai.utils.FileUtils
@@ -49,7 +51,7 @@ fun HistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Historial de Análisis") },
+                title = { Text(stringResource(R.string.history_title)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
@@ -66,7 +68,7 @@ fun HistoryScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(Dimensions.spacingMedium),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 )
@@ -74,12 +76,12 @@ fun HistoryScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(Dimensions.spacingMedium),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
                         Text(
-                            text = "Total de análisis",
+                            text = stringResource(R.string.history_total),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
@@ -90,7 +92,7 @@ fun HistoryScreen(
                     }
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = "Almacenamiento",
+                            text = stringResource(R.string.history_storage),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
@@ -110,13 +112,13 @@ fun HistoryScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "No hay análisis guardados",
+                            text = stringResource(R.string.history_empty_title),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(Dimensions.spacingSmall))
                         Text(
-                            text = "Captura una foto desde el escáner",
+                            text = stringResource(R.string.history_empty_subtitle),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -125,14 +127,13 @@ fun HistoryScreen(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(Dimensions.spacingMedium),
+                    verticalArrangement = Arrangement.spacedBy(Dimensions.cardSpacing)
                 ) {
                     items(detections, key = { it.id }) { detection ->
                         DetectionCard(
                             detection = detection,
                             onClick = {
-                                // Navegar a la pantalla de resultados
                                 onNavigateToResult(
                                     detection.imageUri,
                                     detection.disease,
@@ -152,18 +153,16 @@ fun HistoryScreen(
     showDeleteDialog?.let { detection ->
         AlertDialog(
             onDismissRequest = { showDeleteDialog = null },
-            title = { Text("Eliminar análisis") },
+            title = { Text(stringResource(R.string.history_delete_title)) },
             text = { 
-                Text("¿Estás seguro de que deseas eliminar este análisis de ${detection.diseaseName}?") 
+                Text(stringResource(R.string.history_delete_message, detection.diseaseName)) 
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         scope.launch {
                             try {
-                                // Eliminar de Room
                                 database.detectionDao().delete(detection)
-                                // Eliminar imagen
                                 FileUtils.deleteImage(Uri.parse(detection.imageUri))
                                 showDeleteDialog = null
                             } catch (e: Exception) {
@@ -172,12 +171,15 @@ fun HistoryScreen(
                         }
                     }
                 ) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    Text(
+                        stringResource(R.string.history_delete_confirm),
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = null }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.history_delete_cancel))
                 }
             }
         )
@@ -199,39 +201,34 @@ fun DetectionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .height(Dimensions.cardHeight)
             .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(Dimensions.cardElevation)
     ) {
-        Row(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // ✅ CAMBIADO: Usar AsyncImage con caché en lugar de rememberAsyncImagePainter
+        Row(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
                 model = ImageRequest.Builder(context)
                     .data(Uri.parse(detection.imageUri))
                     .crossfade(true)
-                    .memoryCacheKey(detection.imageUri) // Key única para caché
+                    .memoryCacheKey(detection.imageUri)
                     .diskCacheKey(detection.imageUri)
                     .build(),
-                contentDescription = "Preview",
+                contentDescription = stringResource(R.string.cd_preview),
                 imageLoader = ImageLoaderConfig.getImageLoader(context),
                 modifier = Modifier
-                    .width(100.dp)
+                    .width(Dimensions.cardImageSize)
                     .fillMaxHeight()
-                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)),
+                    .clip(RoundedCornerShape(topStart = Dimensions.cornerRadiusMedium, bottomStart = Dimensions.cornerRadiusMedium)),
                 contentScale = ContentScale.Crop
             )
 
-            // Información
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .padding(12.dp),
+                    .padding(Dimensions.cardPadding),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Encabezado con enfermedad e ícono
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -244,9 +241,12 @@ fun DetectionCard(
                             fontWeight = FontWeight.Bold,
                             maxLines = 2
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(Dimensions.spacingExtraSmall))
                         Text(
-                            text = "Confianza: ${String.format("%.1f", detection.confidence * 100)}%",
+                            text = stringResource(
+                                R.string.history_confidence,
+                                String.format("%.1f", detection.confidence * 100)
+                            ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -258,11 +258,10 @@ fun DetectionCard(
                             MaterialTheme.colorScheme.primary 
                         else 
                             MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(Dimensions.iconSizeSmall)
                     )
                 }
 
-                // Footer con fecha y botón eliminar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -274,14 +273,12 @@ fun DetectionCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     IconButton(
-                        onClick = { 
-                            onDelete()
-                        },
-                        modifier = Modifier.size(36.dp)
+                        onClick = { onDelete() },
+                        modifier = Modifier.size(Dimensions.iconSizeMedium)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Eliminar",
+                            contentDescription = stringResource(R.string.cd_delete),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
@@ -405,4 +402,3 @@ fun HistoryScreenWithDataPreview() {
         }
     }
 }
-
