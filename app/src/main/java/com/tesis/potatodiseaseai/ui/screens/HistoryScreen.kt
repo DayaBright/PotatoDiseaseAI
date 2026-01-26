@@ -32,7 +32,10 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryScreen(innerPadding: PaddingValues) {
+fun HistoryScreen(
+    innerPadding: PaddingValues,
+    onNavigateToResult: (imageUri: String, disease: String, confidence: Float, detectionId: Long) -> Unit = { _, _, _, _ -> }
+) {
     val context = LocalContext.current
     val database = remember { AppDatabase.getDatabase(context) }
     val scope = rememberCoroutineScope()
@@ -41,8 +44,6 @@ fun HistoryScreen(innerPadding: PaddingValues) {
     val storageSize = remember { FileUtils.getTotalImagesSizeInMB(context) }
     
     var showDeleteDialog by remember { mutableStateOf<DetectionEntity?>(null) }
-    var selectedFilter by remember { mutableStateOf<String?>(null) }
-    var sortBy by remember { mutableStateOf("date") }
 
     Scaffold(
         topBar = {
@@ -101,35 +102,6 @@ fun HistoryScreen(innerPadding: PaddingValues) {
             }
 
             // Lista de detecciones
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChip(
-                    selected = selectedFilter == null,
-                    onClick = { selectedFilter = null },
-                    label = { Text("Todos") }
-                )
-                FilterChip(
-                    selected = selectedFilter == "healthy",
-                    onClick = { selectedFilter = "healthy" },
-                    label = { Text("Sanos") }
-                )
-                FilterChip(
-                    selected = selectedFilter == "infected",
-                    onClick = { selectedFilter = "infected" },
-                    label = { Text("Enfermos") }
-                )
-            }
-
-            val sortedDetections = when (sortBy) {
-                "confidence" -> detections.sortedByDescending { it.confidence }
-                else -> detections.sortedByDescending { it.timestamp }
-            }
-
             if (detections.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -155,9 +127,18 @@ fun HistoryScreen(innerPadding: PaddingValues) {
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(sortedDetections, key = { it.id }) { detection ->
+                    items(detections, key = { it.id }) { detection ->
                         DetectionCard(
                             detection = detection,
+                            onClick = {
+                                // Navegar a la pantalla de resultados
+                                onNavigateToResult(
+                                    detection.imageUri,
+                                    detection.disease,
+                                    detection.confidence,
+                                    detection.id
+                                )
+                            },
                             onDelete = { showDeleteDialog = detection }
                         )
                     }
@@ -205,8 +186,8 @@ fun HistoryScreen(innerPadding: PaddingValues) {
 @Composable
 fun DetectionCard(
     detection: DetectionEntity,
-    onDelete: () -> Unit,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit,
+    onDelete: () -> Unit
 ) {
     val isHealthy = detection.disease.lowercase().contains("healthy")
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
@@ -286,7 +267,9 @@ fun DetectionCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     IconButton(
-                        onClick = onDelete,
+                        onClick = { 
+                            onDelete()
+                        },
                         modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
@@ -407,6 +390,7 @@ fun HistoryScreenWithDataPreview() {
                                 timestamp = System.currentTimeMillis() - 86400000
                             )
                         },
+                        onClick = {},
                         onDelete = {}
                     )
                 }

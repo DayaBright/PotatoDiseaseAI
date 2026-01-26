@@ -74,7 +74,23 @@ fun MainNavigation() {
                 ScannerScreen(padding) 
             }
             
-            composable(Screen.History.route) { HistoryScreen(padding) }
+            composable(Screen.History.route) { 
+                HistoryScreen(
+                    innerPadding = padding,
+                    onNavigateToResult = { imageUri, disease, confidence, detectionId ->
+                        val encodedUri = URLEncoder.encode(
+                            imageUri,
+                            StandardCharsets.UTF_8.toString()
+                        )
+                        val encodedDisease = URLEncoder.encode(
+                            disease,
+                            StandardCharsets.UTF_8.toString()
+                        )
+                        navController.navigate("result/$encodedUri/$encodedDisease/$confidence/$detectionId")
+                    }
+                )
+            }
+            
             composable(Screen.Help.route) { HelpScreen(padding) }
             
             composable(
