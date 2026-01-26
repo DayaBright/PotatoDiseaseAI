@@ -4,21 +4,44 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import java.io.File
 import java.io.FileOutputStream
 
 object FileUtils {
+    
+    private const val TAG = "FileUtils"
+    private const val MAX_IMAGE_DIMENSION = 1024 // Máximo 1024x1024
     
     /**
      * Guarda una imagen en el almacenamiento interno de la app
      * @return URI de la imagen guardada
      */
     fun saveImageToInternalStorage(context: Context, sourceUri: Uri): Uri? {
+        var bitmap: Bitmap? = null
         return try {
-            // Leer bitmap desde URI
+            // Leer bitmap desde URI con reducción de tamaño
             val inputStream = context.contentResolver.openInputStream(sourceUri)
-            val bitmap = BitmapFactory.decodeStream(inputStream)
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            BitmapFactory.decodeStream(inputStream, null, options)
             inputStream?.close()
+            
+            // Calcular factor de escala
+            val scaleFactor = calculateInSampleSize(options, MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION)
+            
+            // Decodificar con escala
+            val inputStream2 = context.contentResolver.openInputStream(sourceUri)
+            options.inJustDecodeBounds = false
+            options.inSampleSize = scaleFactor
+            bitmap = BitmapFactory.decodeStream(inputStream2, null, options)
+            inputStream2?.close()
+            
+            if (bitmap == null) {
+                Log.e(TAG, "Error: Bitmap es null después de decodificar")
+                return null
+            }
             
             // Crear directorio si no existe
             val directory = File(context.filesDir, "detections")
@@ -32,14 +55,41 @@ object FileUtils {
             
             // Guardar bitmap
             FileOutputStream(file).use { out ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out) // Reducido a 85% calidad
             }
             
             Uri.fromFile(file)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Error guardando imagen: ${e.message}", e)
             null
+        } finally {
+            // ✅ CRÍTICO: Reciclar bitmap
+            bitmap?.recycle()
         }
+    }
+    
+    /**
+     * Calcula el factor de escala para reducir el tamaño de la imagen
+     */
+    private fun calculateInSampleSize(
+        options: BitmapFactory.Options,
+        reqWidth: Int,
+        reqHeight: Int
+    ): Int {
+        val height = options.outHeight
+        val width = options.outWidth
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight = height / 2
+            val halfWidth = width / 2
+
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+
+        return inSampleSize
     }
     
     /**
@@ -48,9 +98,15 @@ object FileUtils {
     fun deleteImage(imageUri: Uri): Boolean {
         return try {
             val file = File(imageUri.path ?: return false)
-            file.delete()
+            val deleted = file.delete()
+            if (deleted) {
+                Log.d(TAG, "Imagen eliminada: ${file.absolutePath}")
+            } else {
+                Log.w(TAG, "No se pudo eliminar: ${file.absolutePath}")
+            }
+            deleted
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Error eliminando imagen: ${e.message}", e)
             false
         }
     }
@@ -64,5 +120,25 @@ object FileUtils {
         
         val totalBytes = directory.listFiles()?.sumOf { it.length() } ?: 0
         return totalBytes / (1024.0 * 1024.0)
+    }
+    
+    /**
+     * Limpia archivos temporales antiguos
+     */
+    fun cleanTempFiles(context: Context) {
+        try {
+            val cacheDir = context.cacheDir
+            val tempFiles = cacheDir.listFiles { file ->
+                file.name.startsWith("temp_") && file.extension == "jpg"
+            }
+            
+            tempFiles?.forEach { file ->
+                if (file.delete()) {
+                    Log.d(TAG, "Archivo temporal eliminado: ${file.name}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error limpiando archivos temporales: ${e.message}", e)
+        }
     }
 }

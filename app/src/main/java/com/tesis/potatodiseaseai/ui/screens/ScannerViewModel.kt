@@ -1,10 +1,10 @@
 package com.tesis.potatodiseaseai.ui.screens
 
-import android.content.Context
+import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.database.DetectionEntity
@@ -29,19 +29,15 @@ data class ScannerUiState(
     val savedDetectionId: Long? = null
 )
 
-class ScannerViewModel(private val context: Context? = null) : ViewModel() {
+// ✅ CRÍTICO: Usar AndroidViewModel para applicationContext
+class ScannerViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(ScannerUiState())
     val uiState: StateFlow<ScannerUiState> = _uiState.asStateFlow()
 
-    private var classifier: ImageClassifierHelper? = null
-    private val database = context?.let { AppDatabase.getDatabase(it) }
-
-    init {
-        context?.let {
-            classifier = ImageClassifierHelper(it)
-        }
-    }
+    // ✅ CRÍTICO: Usar applicationContext en lugar de context
+    private var classifier: ImageClassifierHelper? = ImageClassifierHelper(application.applicationContext)
+    private val database = AppDatabase.getDatabase(application.applicationContext)
 
     fun toggleFlash() {
         _uiState.value = _uiState.value.copy(flashEnabled = !_uiState.value.flashEnabled)
@@ -61,25 +57,27 @@ class ScannerViewModel(private val context: Context? = null) : ViewModel() {
     }
 
     private fun classifyAndSave(sourceUri: Uri) {
-        val localContext = context
         val localClassifier = classifier
-        val localDatabase = database
 
-        if (localContext == null || localClassifier == null || localDatabase == null) {
+        if (localClassifier == null) {
             _uiState.value = _uiState.value.copy(error = "Recursos no disponibles")
             return
         }
 
         viewModelScope.launch(Dispatchers.IO) {
+            var bitmap: Bitmap? = null
             try {
                 _uiState.value = _uiState.value.copy(isClassifying = true, error = null)
 
                 // 1. Clasificar la imagen
-                val bitmap = loadBitmapFromUri(localContext, sourceUri)
+                bitmap = loadBitmapFromUri(sourceUri)
                 val result = localClassifier.classify(bitmap)
 
                 // 2. Guardar imagen en almacenamiento interno
-                val savedUri = FileUtils.saveImageToInternalStorage(localContext, sourceUri)
+                val savedUri = FileUtils.saveImageToInternalStorage(
+                    getApplication<Application>().applicationContext,
+                    sourceUri
+                )
                 
                 if (savedUri == null) {
                     _uiState.value = _uiState.value.copy(
@@ -97,7 +95,7 @@ class ScannerViewModel(private val context: Context? = null) : ViewModel() {
                     confidence = result.confidence
                 )
                 
-                val detectionId = localDatabase.detectionDao().insert(detection)
+                val detectionId = database.detectionDao().insert(detection)
 
                 // 4. Actualizar UI y navegar
                 _uiState.value = _uiState.value.copy(
@@ -113,6 +111,9 @@ class ScannerViewModel(private val context: Context? = null) : ViewModel() {
                     error = "Error: ${e.message}",
                     isClassifying = false
                 )
+            } finally {
+                // ✅ CRÍTICO: Reciclar bitmap
+                bitmap?.recycle()
             }
         }
     }
@@ -121,13 +122,16 @@ class ScannerViewModel(private val context: Context? = null) : ViewModel() {
         _uiState.value = _uiState.value.copy(shouldNavigateToResult = false)
     }
 
-    private fun loadBitmapFromUri(context: Context, uri: Uri): Bitmap {
-        val inputStream = context.contentResolver.openInputStream(uri)
-        return BitmapFactory.decodeStream(inputStream)
+    private fun loadBitmapFromUri(uri: Uri): Bitmap {
+        val inputStream = getApplication<Application>().contentResolver.openInputStream(uri)
+        return BitmapFactory.decodeStream(inputStream).also {
+            inputStream?.close()
+        }
     }
 
     override fun onCleared() {
         super.onCleared()
         classifier?.clear()
+        classifier = null
     }
 }

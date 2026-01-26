@@ -20,13 +20,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.core.content.ContextCompat
 import com.tesis.potatodiseaseai.ui.screens.components.CameraPreview
+import com.tesis.potatodiseaseai.utils.FileUtils
 import java.io.File
 
 @Composable
 fun ScannerScreen(innerPadding: PaddingValues) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val vm: ScannerViewModel = viewModel { ScannerViewModel(context) }
+    val vm: ScannerViewModel = viewModel()
     val uiState by vm.uiState.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -39,6 +40,8 @@ fun ScannerScreen(innerPadding: PaddingValues) {
 
     LaunchedEffect(Unit) {
         cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        // ✅ CRÍTICO: Limpiar archivos temporales al iniciar
+        FileUtils.cleanTempFiles(context)
     }
 
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -81,10 +84,16 @@ fun ScannerScreen(innerPadding: PaddingValues) {
                     ContextCompat.getMainExecutor(context),
                     object : ImageCapture.OnImageSavedCallback {
                         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                            vm.onCaptureSuccess(android.net.Uri.fromFile(tempFile))
+                            val uri = android.net.Uri.fromFile(tempFile)
+                            vm.onCaptureSuccess(uri)
+                            
+                            // ✅ CRÍTICO: Eliminar archivo temporal después de procesarlo
+                            tempFile.deleteOnExit()
                         }
                         override fun onError(exception: ImageCaptureException) {
                             vm.onCaptureError(exception.message ?: "Error al capturar")
+                            // ✅ CRÍTICO: Eliminar archivo temporal en caso de error
+                            tempFile.delete()
                         }
                     }
                 )

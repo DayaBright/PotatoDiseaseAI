@@ -20,13 +20,19 @@ class ImageClassifierHelper(context: Context) {
 
     init {
         try {
+            // ✅ Validar que el contexto sea applicationContext
+            val appContext = context.applicationContext
+            require(appContext === context || context === appContext) {
+                "Debe pasar applicationContext para evitar memory leaks"
+            }
+            
             val options = ImageClassifierOptions.builder()
                 .setMaxResults(1)
                 .setScoreThreshold(0.0f)
                 .build()
 
             classifier = ImageClassifier.createFromFileAndOptions(
-                context,
+                appContext,
                 modelName,
                 options
             )
@@ -34,6 +40,8 @@ class ImageClassifierHelper(context: Context) {
             Log.d(TAG, "✓ Modelo cargado correctamente")
         } catch (e: IOException) {
             Log.e(TAG, "✗ Error cargando modelo: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "✗ Error de contexto: ${e.message}", e)
         }
     }
 
@@ -66,6 +74,9 @@ class ImageClassifierHelper(context: Context) {
         classifier = null
         Log.d(TAG, "✓ Clasificador liberado")
     }
+    
+    // ✅ NUEVO: Verificar si el clasificador está listo
+    fun isReady(): Boolean = classifier != null
 
     companion object {
         private const val TAG = "ImageClassifierHelper"

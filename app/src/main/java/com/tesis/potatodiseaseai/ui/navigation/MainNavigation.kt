@@ -16,7 +16,6 @@ import java.nio.charset.StandardCharsets
 @Composable
 fun MainNavigation() {
     val navController = rememberNavController()
-    val context = LocalContext.current
     
     Scaffold(
         bottomBar = {
@@ -50,7 +49,8 @@ fun MainNavigation() {
             startDestination = Screen.Scanner.route
         ) {
             composable(Screen.Scanner.route) { 
-                val vm: ScannerViewModel = viewModel { ScannerViewModel(context) }
+                // viewModel() sin parámetros (usa ViewModelProvider por defecto)
+                val vm: ScannerViewModel = viewModel()
                 val uiState by vm.uiState.collectAsState()
                 
                 LaunchedEffect(uiState.shouldNavigateToResult) {

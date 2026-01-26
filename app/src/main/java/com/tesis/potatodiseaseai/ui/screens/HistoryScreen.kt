@@ -21,14 +21,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.database.DetectionEntity
 import com.tesis.potatodiseaseai.ui.theme.PotatoDiseaseAITheme
+import com.tesis.potatodiseaseai.utils.DateUtils
 import com.tesis.potatodiseaseai.utils.FileUtils
+import com.tesis.potatodiseaseai.utils.ImageLoaderConfig
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -189,28 +190,34 @@ fun DetectionCard(
     onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val context = LocalContext.current
     val isHealthy = detection.disease.lowercase().contains("healthy")
-    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
     val formattedDate = remember(detection.timestamp) {
-        dateFormat.format(Date(detection.timestamp))
+        DateUtils.formatTimestamp(detection.timestamp)
     }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(140.dp)
+            .height(100.dp)
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Imagen preview
-            Image(
-                painter = rememberAsyncImagePainter(Uri.parse(detection.imageUri)),
+            // ✅ CAMBIADO: Usar AsyncImage con caché en lugar de rememberAsyncImagePainter
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(Uri.parse(detection.imageUri))
+                    .crossfade(true)
+                    .memoryCacheKey(detection.imageUri) // Key única para caché
+                    .diskCacheKey(detection.imageUri)
+                    .build(),
                 contentDescription = "Preview",
+                imageLoader = ImageLoaderConfig.getImageLoader(context),
                 modifier = Modifier
-                    .width(140.dp)
+                    .width(100.dp)
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)),
                 contentScale = ContentScale.Crop

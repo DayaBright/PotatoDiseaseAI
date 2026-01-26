@@ -21,11 +21,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.model.DiseaseDatabase
 import com.tesis.potatodiseaseai.utils.FileUtils
-import kotlinx.coroutines.launch
+import com.tesis.potatodiseaseai.utils.ImageLoaderConfig
+import kotlinx.coroutines.launch // ✅ AGREGADO
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +40,7 @@ fun ResultScreen(
     onDeleted: () -> Unit
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope() // ✅ AGREGADO
     val database = remember { AppDatabase.getDatabase(context) }
     
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -102,7 +104,7 @@ fun ResultScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Imagen capturada
+            // Imagen analizada
             item {
                 Card(
                     modifier = Modifier
@@ -110,9 +112,15 @@ fun ResultScreen(
                         .height(250.dp),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(Uri.parse(imageUri)),
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(Uri.parse(imageUri))
+                            .crossfade(true)
+                            .memoryCacheKey(imageUri)
+                            .diskCacheKey(imageUri)
+                            .build(),
                         contentDescription = "Imagen analizada",
+                        imageLoader = ImageLoaderConfig.getImageLoader(context),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
