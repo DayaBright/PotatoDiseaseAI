@@ -39,7 +39,7 @@
     <string name="result_delete_message">¿Estás seguro de que deseas eliminar esta detección?</string>
     
     <!-- Help Screen -->
-    <string name="help_title">Pantalla de Ayuda</string>
+    <string name="help_title">Ayuda</string>
     
     <!-- Common -->
     <string name="common_delete">Eliminar</string>
