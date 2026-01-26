@@ -6,7 +6,11 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tesis.potatodiseaseai.data.database.AppDatabase
+import com.tesis.potatodiseaseai.data.database.DetectionEntity
+import com.tesis.potatodiseaseai.data.model.DiseaseDatabase
 import com.tesis.potatodiseaseai.data.tflite.ImageClassifierHelper
+import com.tesis.potatodiseaseai.utils.FileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +25,8 @@ data class ScannerUiState(
     val classification: String? = null,
     val confidence: Float? = null,
     val isClassifying: Boolean = false,
-    val shouldNavigateToResult: Boolean = false
+    val shouldNavigateToResult: Boolean = false,
+    val savedDetectionId: Long? = null
 )
 
 class ScannerViewModel(private val context: Context? = null) : ViewModel() {
@@ -30,6 +35,7 @@ class ScannerViewModel(private val context: Context? = null) : ViewModel() {
     val uiState: StateFlow<ScannerUiState> = _uiState.asStateFlow()
 
     private var classifier: ImageClassifierHelper? = null
+    private val database = context?.let { AppDatabase.getDatabase(it) }
 
     init {
         context?.let {
@@ -47,34 +53,60 @@ class ScannerViewModel(private val context: Context? = null) : ViewModel() {
 
     fun onCaptureSuccess(uri: Uri?) {
         _uiState.value = _uiState.value.copy(isCapturing = false, lastPhotoUri = uri)
-        uri?.let { classifyImage(it) }
+        uri?.let { classifyAndSave(it) }
     }
 
     fun onCaptureError(message: String) {
         _uiState.value = _uiState.value.copy(isCapturing = false, error = message)
     }
 
-    private fun classifyImage(uri: Uri) {
+    private fun classifyAndSave(sourceUri: Uri) {
         val localContext = context
         val localClassifier = classifier
+        val localDatabase = database
 
-        if (localContext == null || localClassifier == null) {
-            _uiState.value = _uiState.value.copy(error = "Clasificador no disponible")
+        if (localContext == null || localClassifier == null || localDatabase == null) {
+            _uiState.value = _uiState.value.copy(error = "Recursos no disponibles")
             return
         }
 
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 _uiState.value = _uiState.value.copy(isClassifying = true, error = null)
 
-                val bitmap = loadBitmapFromUri(localContext, uri)
+                // 1. Clasificar la imagen
+                val bitmap = loadBitmapFromUri(localContext, sourceUri)
                 val result = localClassifier.classify(bitmap)
 
+                // 2. Guardar imagen en almacenamiento interno
+                val savedUri = FileUtils.saveImageToInternalStorage(localContext, sourceUri)
+                
+                if (savedUri == null) {
+                    _uiState.value = _uiState.value.copy(
+                        error = "Error al guardar imagen",
+                        isClassifying = false
+                    )
+                    return@launch
+                }
+
+                // 3. Guardar en Room
+                val detection = DetectionEntity(
+                    imageUri = savedUri.toString(),
+                    disease = result.label,
+                    diseaseName = DiseaseDatabase.getDiseaseName(result.label),
+                    confidence = result.confidence
+                )
+                
+                val detectionId = localDatabase.detectionDao().insert(detection)
+
+                // 4. Actualizar UI y navegar
                 _uiState.value = _uiState.value.copy(
+                    lastPhotoUri = savedUri,
                     classification = result.label,
                     confidence = result.confidence,
                     isClassifying = false,
-                    shouldNavigateToResult = true
+                    shouldNavigateToResult = true,
+                    savedDetectionId = detectionId
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(

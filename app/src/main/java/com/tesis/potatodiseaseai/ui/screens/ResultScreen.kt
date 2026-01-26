@@ -10,18 +10,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
+import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.model.DiseaseDatabase
+import com.tesis.potatodiseaseai.utils.FileUtils
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,11 +33,55 @@ fun ResultScreen(
     imageUri: String,
     disease: String,
     confidence: Float,
-    onBack: () -> Unit
+    detectionId: Long?,
+    onBack: () -> Unit,
+    onDeleted: () -> Unit
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val database = remember { AppDatabase.getDatabase(context) }
+    
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    
     val diseaseName = DiseaseDatabase.getDiseaseName(disease)
     val recommendations = DiseaseDatabase.getRecommendations(disease)
     val isHealthy = disease.lowercase().contains("healthy")
+    
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Eliminar detección") },
+            text = { Text("¿Estás seguro de que deseas eliminar esta detección?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            try {
+                                // Eliminar de Room
+                                detectionId?.let {
+                                    database.detectionDao().deleteById(it)
+                                }
+                                // Eliminar imagen
+                                FileUtils.deleteImage(Uri.parse(imageUri))
+                                
+                                showDeleteDialog = false
+                                onDeleted()
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+                ) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
     
     Scaffold(
         topBar = {
@@ -113,7 +161,7 @@ fun ResultScreen(
                 }
             }
 
-            // Grad-CAM (placeholder por ahora)
+            // Grad-CAM (placeholder)
             item {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -172,13 +220,18 @@ fun ResultScreen(
                 }
             }
 
-            // Botón para guardar en historial
+            // Botón para eliminar
             item {
                 Button(
-                    onClick = { /* TODO: Guardar en historial */ },
-                    modifier = Modifier.fillMaxWidth()
+                    onClick = { showDeleteDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
                 ) {
-                    Text("Guardar en Historial")
+                    Icon(Icons.Default.Delete, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Eliminar detección")
                 }
             }
         }
