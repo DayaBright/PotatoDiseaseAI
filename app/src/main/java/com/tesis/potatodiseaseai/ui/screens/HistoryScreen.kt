@@ -62,7 +62,6 @@ fun HistoryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(innerPadding)
         ) {
             // Info del almacenamiento
             Card(

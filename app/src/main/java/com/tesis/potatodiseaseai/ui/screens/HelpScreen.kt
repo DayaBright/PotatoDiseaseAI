@@ -33,7 +33,6 @@ fun HelpScreen(innerPadding: PaddingValues) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(innerPadding)
                 .padding(Dimensions.spacingMedium),
             verticalArrangement = Arrangement.spacedBy(Dimensions.spacingMedium)
         ) {
