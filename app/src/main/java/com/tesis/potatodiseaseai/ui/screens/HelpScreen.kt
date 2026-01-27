@@ -30,10 +30,13 @@ fun HelpScreen(innerPadding: PaddingValues) {
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(Dimensions.spacingMedium),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = Dimensions.spacingMedium,
+                end = Dimensions.spacingMedium,
+                top = padding.calculateTopPadding() + Dimensions.spacingMedium,
+                bottom = innerPadding.calculateBottomPadding() + Dimensions.spacingMedium
+            ),
             verticalArrangement = Arrangement.spacedBy(Dimensions.spacingMedium)
         ) {
             // Sección: Cómo usar la app

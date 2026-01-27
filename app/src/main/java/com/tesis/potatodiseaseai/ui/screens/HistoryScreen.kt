@@ -62,6 +62,7 @@ fun HistoryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                //.padding(innerPadding)
         ) {
             // Info del almacenamiento
             Card(
@@ -106,7 +107,8 @@ fun HistoryScreen(
             // Lista de detecciones
             if (detections.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize()
+                    .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -126,7 +128,12 @@ fun HistoryScreen(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(Dimensions.spacingMedium),
+                    contentPadding = PaddingValues(
+                        start = Dimensions.spacingMedium,
+                        end = Dimensions.spacingMedium,
+                        top = 0.dp,
+                        bottom = innerPadding.calculateBottomPadding() + Dimensions.spacingMedium
+                    ),
                     verticalArrangement = Arrangement.spacedBy(Dimensions.cardSpacing)
                 ) {
                     items(detections, key = { it.id }) { detection ->
@@ -231,7 +238,7 @@ fun DetectionCard(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
@@ -273,12 +280,13 @@ fun DetectionCard(
                     )
                     IconButton(
                         onClick = { onDelete() },
-                        modifier = Modifier.size(Dimensions.iconSizeMedium)
+                        modifier = Modifier.size(Dimensions.iconSizeSmall)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = stringResource(R.string.cd_delete),
-                            tint = MaterialTheme.colorScheme.error
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(Dimensions.iconSizeSmall)
                         )
                     }
                 }
