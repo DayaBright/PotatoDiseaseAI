@@ -6,14 +6,19 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.TorchState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
@@ -22,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.core.content.ContextCompat
 import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.ui.screens.components.CameraPreview
+import com.tesis.potatodiseaseai.ui.theme.Dimensions
 import com.tesis.potatodiseaseai.utils.FileUtils
 import java.io.File
 
@@ -42,7 +48,6 @@ fun ScannerScreen(innerPadding: PaddingValues) {
 
     LaunchedEffect(Unit) {
         cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-        // Limpiar archivos temporales al iniciar
         FileUtils.cleanTempFiles(context)
     }
 
@@ -52,119 +57,190 @@ fun ScannerScreen(innerPadding: PaddingValues) {
         uri?.let { vm.onCaptureSuccess(it) }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Preview de cámara ocupando TODA la pantalla
         CameraPreview(
             context = context,
             lifecycleOwner = lifecycleOwner,
             onReady = { imageCapture, camera ->
                 imageCaptureState.value = imageCapture
                 cameraState.value = camera
-                camera.cameraInfo.torchState.observe(lifecycleOwner) { torch ->
-                    if ((torch == TorchState.ON) != uiState.flashEnabled) {
-                        vm.toggleFlash()
-                    }
-                }
             }
         )
 
-        // Botón de captura
-        IconButton(
-            onClick = {
-                val imageCapture = imageCaptureState.value ?: return@IconButton
-                vm.startCapture()
-                
-                // Guardar en archivo temporal
-                val tempFile = File.createTempFile("temp_", ".jpg", context.cacheDir)
-                val outputOptions = ImageCapture.OutputFileOptions.Builder(tempFile).build()
-                
-                imageCapture.takePicture(
-                    outputOptions,
-                    ContextCompat.getMainExecutor(context),
-                    object : ImageCapture.OnImageSavedCallback {
-                        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                            val uri = android.net.Uri.fromFile(tempFile)
-                            vm.onCaptureSuccess(uri)
-                            
-                            // Eliminar archivo temporal después de procesarlo
-                            tempFile.deleteOnExit()
-                        }
-                        override fun onError(exception: ImageCaptureException) {
-                            vm.onCaptureError(exception.message ?: context.getString(R.string.scanner_error_capture))
-                            // Eliminar archivo temporal en caso de error
-                            tempFile.delete()
-                        }
-                    }
-                )
-            },
+        // Botón Flash movido más abajo (debajo de la barra de estado)
+        Box(
             modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 60.dp)
+                .align(Alignment.TopStart)
+        ) {
+            IconButton(
+                onClick = {
+                    val newFlashState = !uiState.flashEnabled
+                    vm.toggleFlash() // ✅ Actualiza el UI state
+                    cameraState.value?.cameraControl?.enableTorch(newFlashState) // ✅ Controla el hardware
+                },
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.4f))
+            ) {
+                Icon(
+                    imageVector = if (uiState.flashEnabled) 
+                        Icons.Outlined.FlashOn 
+                    else 
+                        Icons.Outlined.FlashOff,
+                    contentDescription = stringResource(R.string.scanner_flash),
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+
+        // Controles inferiores más compactos con gradiente sutil
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .size(72.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.PhotoCamera,
-                contentDescription = stringResource(R.string.scanner_capture),
-                modifier = Modifier.size(48.dp)
-            )
-        }
-
-        // Toggle de flash
-        IconButton(
-            onClick = {
-                vm.toggleFlash()
-                cameraState.value?.cameraControl?.enableTorch(!uiState.flashEnabled)
-            },
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .size(56.dp)
-                .padding(8.dp)
-        ) {
-            Icon(
-                imageVector = if (uiState.flashEnabled) Icons.Outlined.FlashOn else Icons.Outlined.FlashOff,
-                contentDescription = stringResource(R.string.scanner_flash)
-            )
-        }
-
-        // Abrir galería
-        IconButton(
-            onClick = {
-                galleryLauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.3f),
+                            Color.Black.copy(alpha = 0.5f)
+                        )
+                    )
                 )
-            },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .size(56.dp)
-                .padding(8.dp)
+                .padding(
+                    bottom = innerPadding.calculateBottomPadding() + 16.dp,
+                    top = 24.dp
+                )
         ) {
-            Icon(
-                imageVector = Icons.Outlined.PhotoLibrary,
-                contentDescription = stringResource(R.string.scanner_gallery)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Botón Galería (izquierda)
+                IconButton(
+                    onClick = {
+                        galleryLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Color.White.copy(alpha = 0.5f), CircleShape)
+                        .background(Color.Black.copy(alpha = 0.3f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.PhotoLibrary,
+                        contentDescription = stringResource(R.string.scanner_gallery),
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+
+                // Botón Captura (centro)
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .border(5.dp, Color.White, CircleShape)
+                        .background(Color.Transparent),
+                    contentAlignment = Alignment.Center
+                ) {
+                    IconButton(
+                        onClick = {
+                            val imageCapture = imageCaptureState.value ?: return@IconButton
+                            vm.startCapture()
+                            
+                            val tempFile = File.createTempFile("temp_", ".jpg", context.cacheDir)
+                            val outputOptions = ImageCapture.OutputFileOptions.Builder(tempFile).build()
+                            
+                            imageCapture.takePicture(
+                                outputOptions,
+                                ContextCompat.getMainExecutor(context),
+                                object : ImageCapture.OnImageSavedCallback {
+                                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                        val uri = android.net.Uri.fromFile(tempFile)
+                                        vm.onCaptureSuccess(uri)
+                                        tempFile.deleteOnExit()
+                                    }
+                                    override fun onError(exception: ImageCaptureException) {
+                                        vm.onCaptureError(exception.message ?: context.getString(R.string.scanner_error_capture))
+                                        tempFile.delete()
+                                    }
+                                }
+                            )
+                        },
+                        modifier = Modifier
+                            .size(62.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                    ) {}
+                }
+
+                // Espacio vacío para balance visual
+                Spacer(modifier = Modifier.size(56.dp))
+            }
         }
 
+        // Snackbar
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.TopCenter)
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 120.dp)
         )
 
+        // Loading indicator
         if (uiState.isClassifying) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center)
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.75f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        strokeWidth = 4.dp,
+                        modifier = Modifier.size(56.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.common_loading),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White
+                    )
+                }
+            }
         }
     }
 }
 
 @androidx.compose.ui.tooling.preview.Preview(
     showBackground = true,
-    name = "Vista Previa Escáner",
-    device = "spec:width=412dp,height=915dp"
+    name = "Vista Previa Escáner MD3",
+    device = "spec:width=360dp,height=740dp"
 )
 @Composable
 fun ScannerScreenPreview() {
-    ScannerScreen(innerPadding = PaddingValues())
+    MaterialTheme {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+        ) {
+            ScannerScreen(innerPadding = PaddingValues())
+        }
+    }
 }

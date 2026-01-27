@@ -7,7 +7,9 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 
@@ -17,10 +19,17 @@ fun CameraPreview(
     lifecycleOwner: LifecycleOwner,
     onReady: (imageCapture: ImageCapture, camera: Camera) -> Unit
 ) {
-    val previewView = remember { PreviewView(context) }
+    val previewView = remember { 
+        PreviewView(context).apply {
+            scaleType = PreviewView.ScaleType.FILL_CENTER  // ✅ Ocupa toda la pantalla
+        }
+    }
     var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
 
-    AndroidView(factory = { previewView })
+    AndroidView(
+        factory = { previewView },
+        modifier = Modifier.fillMaxSize()  // ✅ CRÍTICO: Expandir a toda la pantalla
+    )
 
     LaunchedEffect(Unit) {
         val provider = ProcessCameraProvider.getInstance(context).get()
@@ -47,7 +56,6 @@ fun CameraPreview(
         onReady(imageCapture, camera)
     }
 
-    // Liberar cámara cuando el composable se destruye
     DisposableEffect(Unit) {
         onDispose {
             cameraProvider?.unbindAll()
