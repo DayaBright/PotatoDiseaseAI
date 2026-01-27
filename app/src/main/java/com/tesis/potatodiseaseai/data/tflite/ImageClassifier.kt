@@ -12,6 +12,9 @@ class ImageClassifierHelper(context: Context) {
 
     private var classifier: ImageClassifier? = null
     private val modelName = "modelo_papa.tflite"
+    private val labels: List<String> = runCatching {
+        context.assets.open("labels.txt").bufferedReader().use { it.readLines() }
+    }.getOrDefault(emptyList())
 
     data class ClassifierResult(
         val label: String,
@@ -55,11 +58,23 @@ class ImageClassifierHelper(context: Context) {
 
             if (results.isNotEmpty() && results[0].categories.isNotEmpty()) {
                 val category = results[0].categories[0]
-                val label = category.label
-                    .replace("Potato___", "")
-                    .replace("_", " ")
 
-                ClassifierResult(label, category.score)
+                // 1) displayName si viene en el modelo
+                val fromDisplay = category.displayName.takeIf { it.isNotBlank() }
+
+                // 2) labels.txt por índice
+                val fromLabels = labels.getOrNull(category.index)
+
+                // 3) label crudo
+                val raw = category.label
+
+                val chosen = (fromDisplay ?: fromLabels ?: raw)
+                    .substringAfter("Potato___")
+                    .replace("_", " ")
+                    .lowercase()
+                    .trim()
+
+                ClassifierResult(chosen, category.score)
             } else {
                 ClassifierResult("No detectado", 0f)
             }
