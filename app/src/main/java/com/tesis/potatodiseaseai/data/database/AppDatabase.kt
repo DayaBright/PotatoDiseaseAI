@@ -26,10 +26,10 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "potato_disease_database"
+                    DatabaseConstants.DATABASE_NAME
                 )
-                .fallbackToDestructiveMigration() //Recrear BD en cambio de schema
-                .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING) //Mejora performance
+                .fallbackToDestructiveMigration() 
+                .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING) 
                 .build()
                 
                 INSTANCE = instance
@@ -38,7 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
         
-        //Método para limpiar la instancia (útil en tests)
+        //Método para limpiar la instancia
         fun clearInstance() {
             INSTANCE?.close()
             INSTANCE = null

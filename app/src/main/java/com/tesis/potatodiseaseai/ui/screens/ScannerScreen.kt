@@ -79,7 +79,7 @@ fun ScannerScreen(innerPadding: PaddingValues) {
             IconButton(
                 onClick = {
                     val newFlashState = !uiState.flashEnabled
-                    vm.toggleFlash() // ✅ Actualiza el UI state
+                    vm.toggleFlash()
                     cameraState.value?.cameraControl?.enableTorch(newFlashState) // ✅ Controla el hardware
                 },
                 modifier = Modifier

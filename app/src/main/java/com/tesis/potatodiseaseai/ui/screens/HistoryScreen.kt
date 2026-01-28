@@ -53,7 +53,7 @@ fun HistoryScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-        // ✅ Indicador de carga
+        // Indicador de carga
         if (uiState.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),

@@ -11,7 +11,7 @@ object ImageLoaderConfig {
     private var imageLoader: ImageLoader? = null
     
     /**
-     * ✅ ImageLoader optimizado con caché de memoria y disco
+     * ImageLoader optimizado con caché de memoria y disco
      */
     fun getImageLoader(context: Context): ImageLoader {
         return imageLoader ?: synchronized(this) {

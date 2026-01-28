@@ -32,12 +32,12 @@ object Dimensions {
     val imageHeightLarge = 250.dp
     
     // Corner radius
-    val cornerRadius = 8.dp  // ✅ AGREGADO
+    val cornerRadius = 8.dp
     val cornerRadiusSmall = 8.dp
     val cornerRadiusMedium = 12.dp
     
     // Thumbnail
-    val thumbnailSize = 100.dp  // ✅ AGREGADO
+    val thumbnailSize = 100.dp
 }
 
 object ImageConstants {
@@ -45,9 +45,4 @@ object ImageConstants {
     const val JPEG_QUALITY = 85
     const val CACHE_SIZE_MB = 50L
     const val MEMORY_CACHE_PERCENT = 0.25
-}
-
-object DatabaseConstants {
-    const val DATABASE_NAME = "potato_disease_database"
-    const val DATABASE_VERSION = 1
 }

@@ -96,7 +96,7 @@ fun ResultScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ✅ IMAGEN ANALIZADA - Usar CachedImage
+            //  Usar CachedImage
             item {
                 Card(
                     modifier = Modifier
@@ -113,7 +113,7 @@ fun ResultScreen(
                 }
             }
 
-            // ✅ RESULTADO DEL DIAGNÓSTICO - Usar DiagnosisCard
+            // Usar DiagnosisCard
             item {
                 DiagnosisCard(
                     diseaseName = diseaseName,

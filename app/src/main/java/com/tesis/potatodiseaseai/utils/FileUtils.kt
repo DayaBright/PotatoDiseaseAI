@@ -11,11 +11,10 @@ import java.io.FileOutputStream
 object FileUtils {
     
     private const val TAG = "FileUtils"
-    private const val MAX_IMAGE_DIMENSION = 1024 // Máximo 1024x1024
+    private const val MAX_IMAGE_DIMENSION = 1024
     
     /**
      * Guarda una imagen en el almacenamiento interno de la app
-     * @return URI de la imagen guardada
      */
     fun saveImageToInternalStorage(context: Context, sourceUri: Uri): Uri? {
         var bitmap: Bitmap? = null
@@ -58,9 +57,11 @@ object FileUtils {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out) // Reducido a 85% calidad
             }
             
-            Uri.fromFile(file)
+            Uri.fromFile(file).also {
+                AppLogger.debug(TAG, "✓ Imagen guardada: ${file.absolutePath}")  // ✅ CAMBIAR
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Error guardando imagen: ${e.message}", e)
+            AppLogger.error(TAG, "Error guardando imagen: ${e.message}", e)  // ✅ CAMBIAR
             null
         } finally {
             // ✅ CRÍTICO: Reciclar bitmap
@@ -100,13 +101,13 @@ object FileUtils {
             val file = File(imageUri.path ?: return false)
             val deleted = file.delete()
             if (deleted) {
-                Log.d(TAG, "Imagen eliminada: ${file.absolutePath}")
+                AppLogger.debug(TAG, "✓ Imagen eliminada: ${file.absolutePath}")  // ✅ CAMBIAR
             } else {
-                Log.w(TAG, "No se pudo eliminar: ${file.absolutePath}")
+                AppLogger.warning(TAG, "No se pudo eliminar: ${file.absolutePath}")  // ✅ CAMBIAR
             }
             deleted
         } catch (e: Exception) {
-            Log.e(TAG, "Error eliminando imagen: ${e.message}", e)
+            AppLogger.error(TAG, "Error eliminando imagen: ${e.message}", e)  // ✅ CAMBIAR
             false
         }
     }
@@ -134,11 +135,11 @@ object FileUtils {
             
             tempFiles?.forEach { file ->
                 if (file.delete()) {
-                    Log.d(TAG, "Archivo temporal eliminado: ${file.name}")
+                    AppLogger.debug(TAG, "✓ Archivo temporal eliminado: ${file.name}")  // ✅ CAMBIAR
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error limpiando archivos temporales: ${e.message}", e)
+            AppLogger.error(TAG, "Error limpiando archivos temporales: ${e.message}", e)  // ✅ CAMBIAR
         }
     }
 }

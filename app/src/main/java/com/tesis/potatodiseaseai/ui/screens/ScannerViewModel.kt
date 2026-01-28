@@ -31,11 +31,15 @@ data class ScannerUiState(
 )
 
 class ScannerViewModel(application: Application) : AndroidViewModel(application) {
-
+    
+    // Se crea UNA SOLA VEZ cuando se necesita
+    private val classifier: ImageClassifierHelper by lazy {
+        ImageClassifierHelper(application.applicationContext)
+    }
+    
     private val _uiState = MutableStateFlow(ScannerUiState())
     val uiState: StateFlow<ScannerUiState> = _uiState.asStateFlow()
 
-    private var classifier: ImageClassifierHelper? = ImageClassifierHelper(application.applicationContext)
     private val database = AppDatabase.getDatabase(application.applicationContext)
 
     fun toggleFlash() {
@@ -142,7 +146,6 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
 
     override fun onCleared() {
         super.onCleared()
-        classifier?.clear()
-        classifier = null
+        classifier.clear()
     }
 }

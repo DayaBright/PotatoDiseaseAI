@@ -1,17 +1,17 @@
 package com.tesis.potatodiseaseai.data.model
 
 import android.net.Uri
+import com.tesis.potatodiseaseai.utils.LabelNormalizer
 
 data class DetectionResult(
     val imageUri: Uri,
     val disease: String,
     val confidence: Float,
-    val gradcamUri: Uri? = null, // Para el heatmap generado
+    val gradcamUri: Uri? = null,
     val recommendations: List<String>,
     val timestamp: Long = System.currentTimeMillis()
 )
 
-// Datos de ejemplo para cada enfermedad
 object DiseaseDatabase {
     private val diseaseInfo = mapOf(
         "bacterial wilt" to DiseaseInfo(
@@ -94,7 +94,8 @@ object DiseaseDatabase {
     )
 
     fun getRecommendations(diseaseLabel: String): List<String> {
-        val normalizedLabel = diseaseLabel.lowercase().trim()
+        // ✅ Usar normalización centralizada
+        val normalizedLabel = LabelNormalizer.normalize(diseaseLabel)
         return diseaseInfo[normalizedLabel]?.recommendations ?: listOf(
             "Consultar con un agrónomo",
             "Tomar más fotos para análisis",
@@ -103,7 +104,8 @@ object DiseaseDatabase {
     }
 
     fun getDiseaseName(diseaseLabel: String): String {
-        val normalizedLabel = diseaseLabel.lowercase().trim()
+        // ✅ Usar normalización centralizada
+        val normalizedLabel = LabelNormalizer.normalize(diseaseLabel)
         return diseaseInfo[normalizedLabel]?.name ?: diseaseLabel
     }
 }
