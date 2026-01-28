@@ -29,6 +29,7 @@ import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.ui.screens.components.CameraPreview
 import com.tesis.potatodiseaseai.ui.theme.Dimensions
 import com.tesis.potatodiseaseai.utils.FileUtils
+import com.tesis.potatodiseaseai.utils.ImageUtils
 import java.io.File
 
 @Composable
@@ -168,9 +169,17 @@ fun ScannerScreen(innerPadding: PaddingValues) {
                                 ContextCompat.getMainExecutor(context),
                                 object : ImageCapture.OnImageSavedCallback {
                                     override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                                        val uri = android.net.Uri.fromFile(tempFile)
-                                        vm.onCaptureSuccess(uri)
-                                        tempFile.deleteOnExit()
+                                        val originalUri = android.net.Uri.fromFile(tempFile)
+                                        
+                                        // ✅ Corregir rotación ANTES de procesar
+                                        val correctedUri = ImageUtils.fixImageRotation(context, originalUri)
+                                        
+                                        vm.onCaptureSuccess(correctedUri)
+                                        
+                                        // Limpiar archivo temporal original si se creó uno nuevo
+                                        if (correctedUri != originalUri) {
+                                            tempFile.delete()
+                                        }
                                     }
                                     override fun onError(exception: ImageCaptureException) {
                                         vm.onCaptureError(exception.message ?: context.getString(R.string.scanner_error_capture))
@@ -223,24 +232,6 @@ fun ScannerScreen(innerPadding: PaddingValues) {
                     )
                 }
             }
-        }
-    }
-}
-
-@androidx.compose.ui.tooling.preview.Preview(
-    showBackground = true,
-    name = "Vista Previa Escáner MD3",
-    device = "spec:width=360dp,height=740dp"
-)
-@Composable
-fun ScannerScreenPreview() {
-    MaterialTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-        ) {
-            ScannerScreen(innerPadding = PaddingValues())
         }
     }
 }

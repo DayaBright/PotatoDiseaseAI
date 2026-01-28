@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.tesis.potatodiseaseai"
-    compileSdk = 36
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.tesis.potatodiseaseai"
         minSdk = 21
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -95,6 +95,10 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
+
+    //manejo de la rotacion
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
+
 }
 
 

@@ -1,6 +1,7 @@
 package com.tesis.potatodiseaseai.ui.screens.components
 
 import android.content.Context
+import android.view.Surface
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -10,6 +11,7 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 
@@ -21,26 +23,31 @@ fun CameraPreview(
 ) {
     val previewView = remember { 
         PreviewView(context).apply {
-            scaleType = PreviewView.ScaleType.FILL_CENTER  // ✅ Ocupa toda la pantalla
+            scaleType = PreviewView.ScaleType.FILL_CENTER
+            implementationMode = PreviewView.ImplementationMode.COMPATIBLE  // ✅ Mejor compatibilidad
         }
     }
     var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
 
     AndroidView(
         factory = { previewView },
-        modifier = Modifier.fillMaxSize()  // ✅ CRÍTICO: Expandir a toda la pantalla
+        modifier = Modifier.fillMaxSize()
     )
 
     LaunchedEffect(Unit) {
         val provider = ProcessCameraProvider.getInstance(context).get()
         cameraProvider = provider
         
-        val preview = Preview.Builder().build().also {
-            it.setSurfaceProvider(previewView.surfaceProvider)
-        }
+        val preview = Preview.Builder()
+            .setTargetRotation(Surface.ROTATION_0)  // ✅ Forzar rotación vertical
+            .build()
+            .also {
+                it.setSurfaceProvider(previewView.surfaceProvider)
+            }
         
         val imageCapture = ImageCapture.Builder()
-            .setTargetRotation(previewView.display.rotation)
+            .setTargetRotation(Surface.ROTATION_0)  // ✅ Forzar rotación vertical
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)  // ✅ Captura más rápida
             .build()
 
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
