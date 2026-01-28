@@ -1,6 +1,5 @@
 package com.tesis.potatodiseaseai.ui.screens
 
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,22 +14,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.tesis.potatodiseaseai.R
-import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.database.DetectionEntity
+import com.tesis.potatodiseaseai.data.repository.DetectionRepository
+import com.tesis.potatodiseaseai.ui.screens.components.CachedImage  // ✅ NUEVO
 import com.tesis.potatodiseaseai.ui.theme.Dimensions
-import com.tesis.potatodiseaseai.ui.theme.PotatoDiseaseAITheme
 import com.tesis.potatodiseaseai.utils.DateUtils
-import com.tesis.potatodiseaseai.utils.FileUtils
-import com.tesis.potatodiseaseai.utils.ImageLoaderConfig
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,11 +33,11 @@ fun HistoryScreen(
     onNavigateToResult: (imageUri: String, disease: String, confidence: Float, detectionId: Long) -> Unit = { _, _, _, _ -> }
 ) {
     val context = LocalContext.current
-    val database = remember { AppDatabase.getDatabase(context) }
+    val repository = remember { DetectionRepository(context) }
     val scope = rememberCoroutineScope()
     
-    val detections by database.detectionDao().getAllDetections().collectAsState(initial = emptyList())
-    val storageSize = remember { FileUtils.getTotalImagesSizeInMB(context) }
+    val detections by repository.getAllDetections().collectAsState(initial = emptyList())
+    val storageSize = remember { repository.getTotalStorageSize() }
     
     var showDeleteDialog by remember { mutableStateOf<DetectionEntity?>(null) }
 
@@ -62,13 +55,17 @@ fun HistoryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                //.padding(innerPadding)
         ) {
             // Info del almacenamiento
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(Dimensions.spacingMedium),
+                    .padding(
+                        start = Dimensions.spacingMedium,
+                        end = Dimensions.spacingMedium,
+                        top = 0.dp,
+                        bottom = Dimensions.spacingMedium
+                    ),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 )
@@ -107,8 +104,9 @@ fun HistoryScreen(
             // Lista de detecciones
             if (detections.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize()
-                    .padding(innerPadding),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -155,7 +153,7 @@ fun HistoryScreen(
         }
     }
 
-    // Diálogo de confirmación para eliminar
+    // Diálogo de confirmación
     showDeleteDialog?.let { detection ->
         AlertDialog(
             onDismissRequest = { showDeleteDialog = null },
@@ -167,12 +165,8 @@ fun HistoryScreen(
                 TextButton(
                     onClick = {
                         scope.launch {
-                            try {
-                                database.detectionDao().delete(detection)
-                                FileUtils.deleteImage(Uri.parse(detection.imageUri))
+                            if (repository.deleteDetection(detection)) {
                                 showDeleteDialog = null
-                            } catch (e: Exception) {
-                                e.printStackTrace()
                             }
                         }
                     }
@@ -192,49 +186,39 @@ fun HistoryScreen(
     }
 }
 
+// ✅ ACTUALIZAR DetectionCard para usar CachedImage
 @Composable
-fun DetectionCard(
+private fun DetectionCard(
     detection: DetectionEntity,
     onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val context = LocalContext.current
     val isHealthy = detection.disease.lowercase().contains("healthy")
-    val formattedDate = remember(detection.timestamp) {
-        DateUtils.formatTimestamp(detection.timestamp)
-    }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(Dimensions.cardHeight)
-            .clickable { onClick() },
+            .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(Dimensions.cardElevation)
     ) {
-        Row(modifier = Modifier.fillMaxSize()) {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(Uri.parse(detection.imageUri))
-                    .crossfade(true)
-                    .memoryCacheKey(detection.imageUri)
-                    .diskCacheKey(detection.imageUri)
-                    .build(),
-                contentDescription = stringResource(R.string.cd_preview),
-                imageLoader = ImageLoaderConfig.getImageLoader(context),
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimensions.spacingMedium),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // ✅ USAR CachedImage en lugar de AsyncImage
+            CachedImage(
+                imageUri = detection.imageUri,
+                contentDescription = stringResource(R.string.cd_detection_preview),
                 modifier = Modifier
-                    .width(Dimensions.cardImageSize)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(topStart = Dimensions.cornerRadiusMedium, bottomStart = Dimensions.cornerRadiusMedium)),
-                contentScale = ContentScale.Crop
+                    .size(Dimensions.thumbnailSize)
+                    .clip(RoundedCornerShape(Dimensions.cornerRadius))
             )
 
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .padding(Dimensions.cardPadding),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
+            Spacer(modifier = Modifier.width(Dimensions.spacingMedium))
+
+            Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -244,10 +228,8 @@ fun DetectionCard(
                         Text(
                             text = detection.diseaseName,
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 2
+                            fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.height(Dimensions.spacingExtraSmall))
                         Text(
                             text = stringResource(
                                 R.string.history_confidence,
@@ -256,40 +238,31 @@ fun DetectionCard(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Text(
+                            text = DateUtils.formatTimestamp(detection.timestamp),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                     Icon(
                         imageVector = if (isHealthy) Icons.Default.CheckCircle else Icons.Default.Warning,
                         contentDescription = null,
-                        tint = if (isHealthy) 
-                            MaterialTheme.colorScheme.primary 
-                        else 
-                            MaterialTheme.colorScheme.error,
+                        tint = if (isHealthy) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(Dimensions.iconSizeSmall)
                     )
                 }
+            }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = formattedDate,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    IconButton(
-                        onClick = { onDelete() },
-                        modifier = Modifier.size(Dimensions.iconSizeSmall)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = stringResource(R.string.cd_delete),
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(Dimensions.iconSizeSmall)
-                        )
-                    }
-                }
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.size(Dimensions.iconSizeSmall)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.cd_delete),
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(Dimensions.iconSizeSmall)
+                )
             }
         }
     }

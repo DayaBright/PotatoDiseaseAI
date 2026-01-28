@@ -1,6 +1,5 @@
 package com.tesis.potatodiseaseai.ui.screens
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,9 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,13 +18,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.tesis.potatodiseaseai.R
-import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.model.DiseaseDatabase
-import com.tesis.potatodiseaseai.utils.FileUtils
-import com.tesis.potatodiseaseai.utils.ImageLoaderConfig
+import com.tesis.potatodiseaseai.data.repository.DetectionRepository
+import com.tesis.potatodiseaseai.ui.screens.components.CachedImage
+import com.tesis.potatodiseaseai.ui.screens.components.DiagnosisCard
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,7 +37,7 @@ fun ResultScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val database = remember { AppDatabase.getDatabase(context) }
+    val repository = remember { DetectionRepository(context) }
     
     var showDeleteDialog by remember { mutableStateOf(false) }
     
@@ -59,23 +54,19 @@ fun ResultScreen(
                 TextButton(
                     onClick = {
                         scope.launch {
-                            try {
-                                // Eliminar de Room
-                                detectionId?.let {
-                                    database.detectionDao().deleteById(it)
+                            detectionId?.let {
+                                if (repository.deleteDetectionById(it, imageUri)) {
+                                    showDeleteDialog = false
+                                    onDeleted()
                                 }
-                                // Eliminar imagen
-                                FileUtils.deleteImage(Uri.parse(imageUri))
-                                
-                                showDeleteDialog = false
-                                onDeleted()
-                            } catch (e: Exception) {
-                                e.printStackTrace()
                             }
                         }
                     }
                 ) {
-                    Text(stringResource(R.string.history_delete_confirm), color = MaterialTheme.colorScheme.error)
+                    Text(
+                        stringResource(R.string.history_delete_confirm),
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             },
             dismissButton = {
@@ -105,7 +96,7 @@ fun ResultScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Imagen analizada
+            // ✅ IMAGEN ANALIZADA - Usar CachedImage
             item {
                 Card(
                     modifier = Modifier
@@ -113,64 +104,22 @@ fun ResultScreen(
                         .height(250.dp),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(Uri.parse(imageUri))
-                            .crossfade(true)
-                            .memoryCacheKey(imageUri)
-                            .diskCacheKey(imageUri)
-                            .build(),
+                    CachedImage(
+                        imageUri = imageUri,
                         contentDescription = stringResource(R.string.cd_analyzed_image),
-                        imageLoader = ImageLoaderConfig.getImageLoader(context),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
                 }
             }
 
-            // Resultado del diagnóstico
+            // ✅ RESULTADO DEL DIAGNÓSTICO - Usar DiagnosisCard
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isHealthy) 
-                            MaterialTheme.colorScheme.primaryContainer 
-                        else 
-                            MaterialTheme.colorScheme.errorContainer
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = if (isHealthy) Icons.Default.CheckCircle else Icons.Default.Warning,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = if (isHealthy) 
-                                MaterialTheme.colorScheme.primary 
-                            else 
-                                MaterialTheme.colorScheme.error
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(
-                                text = diseaseName,
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-    text = stringResource(
-        R.string.result_confidence,
-        String.format("%.1f", confidence * 100)
-    ),
-    style = MaterialTheme.typography.bodyLarge
-)
-                        }
-                    }
-                }
+                DiagnosisCard(
+                    diseaseName = diseaseName,
+                    confidence = confidence,
+                    isHealthy = isHealthy
+                )
             }
 
             // Grad-CAM (placeholder)

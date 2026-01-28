@@ -51,4 +51,5 @@
     <string name="cd_preview">Vista previa</string>
     <string name="cd_analyzed_image">Imagen analizada</string>
     <string name="cd_delete">Eliminar</string>
+    <string name="cd_detection_preview">Vista previa de detección</string>
 </resources>

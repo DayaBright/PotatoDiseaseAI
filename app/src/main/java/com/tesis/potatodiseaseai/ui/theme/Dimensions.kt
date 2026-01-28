@@ -32,8 +32,12 @@ object Dimensions {
     val imageHeightLarge = 250.dp
     
     // Corner radius
+    val cornerRadius = 8.dp  // ✅ AGREGADO
     val cornerRadiusSmall = 8.dp
     val cornerRadiusMedium = 12.dp
+    
+    // Thumbnail
+    val thumbnailSize = 100.dp  // ✅ AGREGADO
 }
 
 object ImageConstants {
