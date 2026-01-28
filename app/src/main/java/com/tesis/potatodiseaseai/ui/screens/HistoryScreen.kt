@@ -14,32 +14,33 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.data.database.DetectionEntity
-import com.tesis.potatodiseaseai.data.repository.DetectionRepository
-import com.tesis.potatodiseaseai.ui.screens.components.CachedImage  // ✅ NUEVO
+import com.tesis.potatodiseaseai.ui.screens.components.CachedImage
 import com.tesis.potatodiseaseai.ui.theme.Dimensions
 import com.tesis.potatodiseaseai.utils.DateUtils
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
     innerPadding: PaddingValues,
-    onNavigateToResult: (imageUri: String, disease: String, confidence: Float, detectionId: Long) -> Unit = { _, _, _, _ -> }
+    onNavigateToResult: (imageUri: String, disease: String, confidence: Float, detectionId: Long) -> Unit = { _, _, _, _ -> },
+    viewModel: HistoryViewModel = viewModel()
 ) {
-    val context = LocalContext.current
-    val repository = remember { DetectionRepository(context) }
-    val scope = rememberCoroutineScope()
-    
-    val detections by repository.getAllDetections().collectAsState(initial = emptyList())
-    val storageSize = remember { repository.getTotalStorageSize() }
-    
-    var showDeleteDialog by remember { mutableStateOf<DetectionEntity?>(null) }
+    val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // ✅ Mostrar errores con Snackbar
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { error ->
+            snackbarHostState.showSnackbar(error)
+            viewModel.clearError()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -49,104 +50,110 @@ fun HistoryScreen(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            // Info del almacenamiento
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = Dimensions.spacingMedium,
-                        end = Dimensions.spacingMedium,
-                        top = 0.dp,
-                        bottom = Dimensions.spacingMedium
-                    ),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
+        // ✅ Indicador de carga
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Row(
+                CircularProgressIndicator()
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                // Info del almacenamiento
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(Dimensions.spacingMedium),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
                 ) {
-                    Column {
-                        Text(
-                            text = stringResource(R.string.history_total),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            text = "${detections.size}",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = stringResource(R.string.history_storage),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            text = String.format("%.2f MB", storageSize),
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(Dimensions.spacingMedium),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                text = stringResource(R.string.history_total),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = "${uiState.detections.size}",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = stringResource(R.string.history_storage),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = String.format("%.2f MB", uiState.storageSize),
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
-            }
 
-            // Lista de detecciones
-            if (detections.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = stringResource(R.string.history_empty_title),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(Dimensions.spacingSmall))
-                        Text(
-                            text = stringResource(R.string.history_empty_subtitle),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                // Lista de detecciones
+                if (uiState.detections.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = stringResource(R.string.history_empty_title),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(Dimensions.spacingSmall))
+                            Text(
+                                text = stringResource(R.string.history_empty_subtitle),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        start = Dimensions.spacingMedium,
-                        end = Dimensions.spacingMedium,
-                        top = 0.dp,
-                        bottom = innerPadding.calculateBottomPadding() + Dimensions.spacingMedium
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(Dimensions.cardSpacing)
-                ) {
-                    items(detections, key = { it.id }) { detection ->
-                        DetectionCard(
-                            detection = detection,
-                            onClick = {
-                                onNavigateToResult(
-                                    detection.imageUri,
-                                    detection.disease,
-                                    detection.confidence,
-                                    detection.id
-                                )
-                            },
-                            onDelete = { showDeleteDialog = detection }
-                        )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            start = Dimensions.spacingMedium,
+                            end = Dimensions.spacingMedium,
+                            top = 0.dp,
+                            bottom = innerPadding.calculateBottomPadding() + Dimensions.spacingMedium
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.cardSpacing)
+                    ) {
+                        items(uiState.detections, key = { it.id }) { detection ->
+                            DetectionCard(
+                                detection = detection,
+                                onClick = {
+                                    onNavigateToResult(
+                                        detection.imageUri,
+                                        detection.disease,
+                                        detection.confidence,
+                                        detection.id
+                                    )
+                                },
+                                onDelete = { viewModel.showDeleteDialog(detection) }  // ✅ Llamar ViewModel
+                            )
+                        }
                     }
                 }
             }
@@ -154,22 +161,16 @@ fun HistoryScreen(
     }
 
     // Diálogo de confirmación
-    showDeleteDialog?.let { detection ->
+    uiState.showDeleteDialog?.let { detection ->
         AlertDialog(
-            onDismissRequest = { showDeleteDialog = null },
+            onDismissRequest = { viewModel.dismissDeleteDialog() },
             title = { Text(stringResource(R.string.history_delete_title)) },
             text = { 
                 Text(stringResource(R.string.history_delete_message, detection.diseaseName)) 
             },
             confirmButton = {
                 TextButton(
-                    onClick = {
-                        scope.launch {
-                            if (repository.deleteDetection(detection)) {
-                                showDeleteDialog = null
-                            }
-                        }
-                    }
+                    onClick = { viewModel.deleteDetection(detection) }  // ✅ Llamar ViewModel
                 ) {
                     Text(
                         stringResource(R.string.history_delete_confirm),
@@ -178,7 +179,7 @@ fun HistoryScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = null }) {
+                TextButton(onClick = { viewModel.dismissDeleteDialog() }) {
                     Text(stringResource(R.string.history_delete_cancel))
                 }
             }
@@ -186,7 +187,6 @@ fun HistoryScreen(
     }
 }
 
-// ✅ ACTUALIZAR DetectionCard para usar CachedImage
 @Composable
 private fun DetectionCard(
     detection: DetectionEntity,
@@ -207,7 +207,6 @@ private fun DetectionCard(
                 .padding(Dimensions.spacingMedium),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // ✅ USAR CachedImage en lugar de AsyncImage
             CachedImage(
                 imageUri = detection.imageUri,
                 contentDescription = stringResource(R.string.cd_detection_preview),

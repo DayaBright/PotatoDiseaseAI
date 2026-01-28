@@ -24,7 +24,7 @@ fun CameraPreview(
     val previewView = remember { 
         PreviewView(context).apply {
             scaleType = PreviewView.ScaleType.FILL_CENTER
-            implementationMode = PreviewView.ImplementationMode.COMPATIBLE  // ✅ Mejor compatibilidad
+            implementationMode = PreviewView.ImplementationMode.COMPATIBLE
         }
     }
     var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
@@ -39,15 +39,15 @@ fun CameraPreview(
         cameraProvider = provider
         
         val preview = Preview.Builder()
-            .setTargetRotation(Surface.ROTATION_0)  // ✅ Forzar rotación vertical
+            .setTargetRotation(Surface.ROTATION_0)
             .build()
             .also {
                 it.setSurfaceProvider(previewView.surfaceProvider)
             }
         
         val imageCapture = ImageCapture.Builder()
-            .setTargetRotation(Surface.ROTATION_0)  // ✅ Forzar rotación vertical
-            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)  // ✅ Captura más rápida
+            .setTargetRotation(Surface.ROTATION_0)
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .build()
 
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
