@@ -6,12 +6,13 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 
@@ -37,9 +38,15 @@ fun CameraPreview(
     LaunchedEffect(Unit) {
         val provider = ProcessCameraProvider.getInstance(context).get()
         cameraProvider = provider
-        
+
+        // Usar 16:9 en ambos para que la captura coincida con el preview
+        val resolutionSelector = ResolutionSelector.Builder()
+            .setAspectRatioStrategy(AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY)
+            .build()
+
         val preview = Preview.Builder()
             .setTargetRotation(Surface.ROTATION_0)
+            .setResolutionSelector(resolutionSelector)
             .build()
             .also {
                 it.setSurfaceProvider(previewView.surfaceProvider)
@@ -47,6 +54,7 @@ fun CameraPreview(
         
         val imageCapture = ImageCapture.Builder()
             .setTargetRotation(Surface.ROTATION_0)
+            .setResolutionSelector(resolutionSelector)
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .build()
 
