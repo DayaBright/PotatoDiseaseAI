@@ -29,9 +29,8 @@ class ImageClassifierHelper(context: Context) {
 
     init {
         try {
-            // Validar que el contexto sea applicationContext
             val appContext = context.applicationContext
-            require(appContext === context || context === appContext) {
+            require(appContext === context) {
                 "Debe pasar applicationContext para evitar memory leaks"
             }
             
@@ -65,11 +64,6 @@ class ImageClassifierHelper(context: Context) {
         }
     }
 
-    /**
-     * Clasifica una imagen usando TensorFlow Lite
-     * @param bitmap Imagen a clasificar
-     * @return ClassifierResult con label, confidence y posible error
-     */
     fun classify(bitmap: Bitmap): ClassifierResult {
         
         // ✅ Validar si hay error de inicialización
@@ -188,9 +182,6 @@ class ImageClassifierHelper(context: Context) {
         }
     }
 
-    /**
-     * Libera recursos del clasificador
-     */
     fun clear() {
         try {
             classifier?.close()
@@ -201,10 +192,7 @@ class ImageClassifierHelper(context: Context) {
             AppLogger.error(TAG, error.message)
         }
     }
-    
-    /**
-     * Verifica si el clasificador está listo para usar
-     */
+
     fun isReady(): Boolean = classifier != null && initError == null
 
     companion object {

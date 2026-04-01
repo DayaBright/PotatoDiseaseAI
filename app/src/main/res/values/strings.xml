@@ -14,6 +14,7 @@
     <string name="scanner_error_capture">Error al capturar</string>
     <string name="scanner_error_resources">Recursos no disponibles</string>
     <string name="scanner_error_save">Error al guardar imagen</string>
+    <string name="scanner_guide_text">Centra la hoja dentro del recuadro</string>
     
     <!-- History Screen -->
     <string name="history_title">Historial de Análisis</string>

@@ -12,6 +12,7 @@ import com.tesis.potatodiseaseai.data.model.DiseaseDatabase
 import com.tesis.potatodiseaseai.data.tflite.ImageClassifierHelper
 import com.tesis.potatodiseaseai.utils.ErrorHandler
 import com.tesis.potatodiseaseai.utils.FileUtils
+import com.tesis.potatodiseaseai.utils.ImageUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -70,7 +71,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
     private fun classifyAndSave(sourceUri: Uri) {
         val localClassifier = classifier
 
-        if (localClassifier == null || !localClassifier.isReady()) {
+        if (!localClassifier.isReady()) {
             _uiState.value = _uiState.value.copy(
                 error = ErrorHandler.getUserMessage(
                     com.tesis.potatodiseaseai.utils.AppError.ClassificationError()
@@ -84,9 +85,11 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
             try {
                 _uiState.value = _uiState.value.copy(isClassifying = true, error = null)
 
-                // 1. Clasificar la imagen
+                // 1. Clasificar la imagen (recortando al cuadro guía)
                 bitmap = loadBitmapFromUri(sourceUri)
-                val result = localClassifier.classify(bitmap)
+                val croppedBitmap = ImageUtils.centerCropSquare(bitmap)
+                val result = localClassifier.classify(croppedBitmap)
+                croppedBitmap.recycle()
 
                 // 2. Guardar imagen en almacenamiento interno
                 val savedUri = FileUtils.saveImageToInternalStorage(

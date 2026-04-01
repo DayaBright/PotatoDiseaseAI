@@ -103,4 +103,17 @@ object ImageUtils {
         }
         return Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
     }
+
+    /**
+     * Recorta un cuadrado centrado del bitmap.
+     * Esto coincide con el cuadro guía que se muestra en la cámara,
+     * asegurando que solo el área enmarcada por el usuario se envíe al clasificador.
+     * @param fraction Fracción del lado menor a usar (0.0-1.0). Por defecto 0.85 (85%).
+     */
+    fun centerCropSquare(source: Bitmap, fraction: Float = 0.85f): Bitmap {
+        val side = (minOf(source.width, source.height) * fraction.coerceIn(0.1f, 1.0f)).toInt()
+        val x = (source.width - side) / 2
+        val y = (source.height - side) / 2
+        return Bitmap.createBitmap(source, x, y, side, side)
+    }
 }
