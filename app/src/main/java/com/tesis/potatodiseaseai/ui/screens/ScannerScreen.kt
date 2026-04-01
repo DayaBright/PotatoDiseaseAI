@@ -39,9 +39,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.ui.screens.components.CameraPreview
-import com.tesis.potatodiseaseai.ui.theme.Dimensions
 import com.tesis.potatodiseaseai.utils.FileUtils
-import com.tesis.potatodiseaseai.utils.ImageUtils
 import java.io.File
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -82,18 +80,20 @@ fun ScannerScreen(innerPadding: PaddingValues) {
 
         // Fracción del lado menor que se recortará
         val guideFraction = 0.85f
-        
+
         // Animación sutil de pulso para las esquinas
         val infiniteTransition = rememberInfiniteTransition(label = "guide_pulse")
-        val pulseAlpha by infiniteTransition.animateFloat(
-            initialValue = 0.6f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1200, easing = EaseInOutCubic),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "corner_alpha"
-        )
+        val pulseAlpha by
+                infiniteTransition.animateFloat(
+                        initialValue = 0.6f,
+                        targetValue = 1f,
+                        animationSpec =
+                                infiniteRepeatable(
+                                        animation = tween(1200, easing = EaseInOutCubic),
+                                        repeatMode = RepeatMode.Reverse
+                                ),
+                        label = "corner_alpha"
+                )
 
         // Overlay con recorte cuadrado centrado
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -101,29 +101,30 @@ fun ScannerScreen(innerPadding: PaddingValues) {
             val left = (size.width - side) / 2f
             val top = (size.height - side) / 2f
             val cornerRadius = 24.dp.toPx()
-            val bracketLen = side * 0.15f  // largo de cada brazo de esquina
+            val bracketLen = side * 0.15f // largo de cada brazo de esquina
             val strokeW = 3.dp.toPx()
 
             // 1. Fondo oscuro con hueco transparente
-            val cutoutPath = Path().apply {
-                addRoundRect(
-                    androidx.compose.ui.geometry.RoundRect(
-                        rect = Rect(Offset(left, top), Size(side, side)),
-                        cornerRadius = CornerRadius(cornerRadius)
-                    )
-                )
-            }
+            val cutoutPath =
+                    Path().apply {
+                        addRoundRect(
+                                androidx.compose.ui.geometry.RoundRect(
+                                        rect = Rect(Offset(left, top), Size(side, side)),
+                                        cornerRadius = CornerRadius(cornerRadius)
+                                )
+                        )
+                    }
             clipPath(cutoutPath, clipOp = ClipOp.Difference) {
                 drawRect(Color.Black.copy(alpha = 0.45f))
             }
 
             // 2. Borde sutil del recuadro
             drawRoundRect(
-                color = Color.White.copy(alpha = 0.25f),
-                topLeft = Offset(left, top),
-                size = Size(side, side),
-                cornerRadius = CornerRadius(cornerRadius),
-                style = Stroke(width = 1.dp.toPx())
+                    color = Color.White.copy(alpha = 0.25f),
+                    topLeft = Offset(left, top),
+                    size = Size(side, side),
+                    cornerRadius = CornerRadius(cornerRadius),
+                    style = Stroke(width = 1.dp.toPx())
             )
 
             // 3. Esquinas animadas (tipo "visor")
@@ -131,44 +132,123 @@ fun ScannerScreen(innerPadding: PaddingValues) {
             val bracketStroke = Stroke(width = strokeW, cap = StrokeCap.Round)
 
             // ── Esquina superior-izquierda
-            drawLine(bracketColor, Offset(left + cornerRadius, top), Offset(left + bracketLen, top), strokeWidth = strokeW, cap = StrokeCap.Round)
-            drawLine(bracketColor, Offset(left, top + cornerRadius), Offset(left, top + bracketLen), strokeWidth = strokeW, cap = StrokeCap.Round)
-            drawArc(bracketColor, 180f, 90f, false, topLeft = Offset(left, top), size = Size(cornerRadius * 2, cornerRadius * 2), style = bracketStroke)
+            drawLine(
+                    bracketColor,
+                    Offset(left + cornerRadius, top),
+                    Offset(left + bracketLen, top),
+                    strokeWidth = strokeW,
+                    cap = StrokeCap.Round
+            )
+            drawLine(
+                    bracketColor,
+                    Offset(left, top + cornerRadius),
+                    Offset(left, top + bracketLen),
+                    strokeWidth = strokeW,
+                    cap = StrokeCap.Round
+            )
+            drawArc(
+                    bracketColor,
+                    180f,
+                    90f,
+                    false,
+                    topLeft = Offset(left, top),
+                    size = Size(cornerRadius * 2, cornerRadius * 2),
+                    style = bracketStroke
+            )
 
             // ── Esquina superior-derecha
-            drawLine(bracketColor, Offset(left + side - cornerRadius, top), Offset(left + side - bracketLen, top), strokeWidth = strokeW, cap = StrokeCap.Round)
-            drawLine(bracketColor, Offset(left + side, top + cornerRadius), Offset(left + side, top + bracketLen), strokeWidth = strokeW, cap = StrokeCap.Round)
-            drawArc(bracketColor, 270f, 90f, false, topLeft = Offset(left + side - cornerRadius * 2, top), size = Size(cornerRadius * 2, cornerRadius * 2), style = bracketStroke)
+            drawLine(
+                    bracketColor,
+                    Offset(left + side - cornerRadius, top),
+                    Offset(left + side - bracketLen, top),
+                    strokeWidth = strokeW,
+                    cap = StrokeCap.Round
+            )
+            drawLine(
+                    bracketColor,
+                    Offset(left + side, top + cornerRadius),
+                    Offset(left + side, top + bracketLen),
+                    strokeWidth = strokeW,
+                    cap = StrokeCap.Round
+            )
+            drawArc(
+                    bracketColor,
+                    270f,
+                    90f,
+                    false,
+                    topLeft = Offset(left + side - cornerRadius * 2, top),
+                    size = Size(cornerRadius * 2, cornerRadius * 2),
+                    style = bracketStroke
+            )
 
             // ── Esquina inferior-izquierda
-            drawLine(bracketColor, Offset(left + cornerRadius, top + side), Offset(left + bracketLen, top + side), strokeWidth = strokeW, cap = StrokeCap.Round)
-            drawLine(bracketColor, Offset(left, top + side - cornerRadius), Offset(left, top + side - bracketLen), strokeWidth = strokeW, cap = StrokeCap.Round)
-            drawArc(bracketColor, 90f, 90f, false, topLeft = Offset(left, top + side - cornerRadius * 2), size = Size(cornerRadius * 2, cornerRadius * 2), style = bracketStroke)
+            drawLine(
+                    bracketColor,
+                    Offset(left + cornerRadius, top + side),
+                    Offset(left + bracketLen, top + side),
+                    strokeWidth = strokeW,
+                    cap = StrokeCap.Round
+            )
+            drawLine(
+                    bracketColor,
+                    Offset(left, top + side - cornerRadius),
+                    Offset(left, top + side - bracketLen),
+                    strokeWidth = strokeW,
+                    cap = StrokeCap.Round
+            )
+            drawArc(
+                    bracketColor,
+                    90f,
+                    90f,
+                    false,
+                    topLeft = Offset(left, top + side - cornerRadius * 2),
+                    size = Size(cornerRadius * 2, cornerRadius * 2),
+                    style = bracketStroke
+            )
 
             // ── Esquina inferior-derecha
-            drawLine(bracketColor, Offset(left + side - cornerRadius, top + side), Offset(left + side - bracketLen, top + side), strokeWidth = strokeW, cap = StrokeCap.Round)
-            drawLine(bracketColor, Offset(left + side, top + side - cornerRadius), Offset(left + side, top + side - bracketLen), strokeWidth = strokeW, cap = StrokeCap.Round)
-            drawArc(bracketColor, 0f, 90f, false, topLeft = Offset(left + side - cornerRadius * 2, top + side - cornerRadius * 2), size = Size(cornerRadius * 2, cornerRadius * 2), style = bracketStroke)
+            drawLine(
+                    bracketColor,
+                    Offset(left + side - cornerRadius, top + side),
+                    Offset(left + side - bracketLen, top + side),
+                    strokeWidth = strokeW,
+                    cap = StrokeCap.Round
+            )
+            drawLine(
+                    bracketColor,
+                    Offset(left + side, top + side - cornerRadius),
+                    Offset(left + side, top + side - bracketLen),
+                    strokeWidth = strokeW,
+                    cap = StrokeCap.Round
+            )
+            drawArc(
+                    bracketColor,
+                    0f,
+                    90f,
+                    false,
+                    topLeft = Offset(left + side - cornerRadius * 2, top + side - cornerRadius * 2),
+                    size = Size(cornerRadius * 2, cornerRadius * 2),
+                    style = bracketStroke
+            )
         }
 
         // Texto guía debajo del cuadro
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val guideBottom = (maxHeight.value + maxWidth.value * guideFraction) / 2f
             Text(
-                text = stringResource(R.string.scanner_guide_text),
-                color = Color.White,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    //.fillMaxWidth()
-                    .padding(top = guideBottom.dp + 16.dp)
-                    .background(
-                        Color.Black.copy(alpha = 0.35f),
-                        RoundedCornerShape(20.dp)
-                    )
-                    .padding(horizontal = 24.dp, vertical = 8.dp)
-                    .align(Alignment.TopCenter)
+                    text = stringResource(R.string.scanner_guide_text),
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+                    modifier =
+                            Modifier.padding(top = guideBottom.dp + 16.dp)
+                                    .background(
+                                            Color.Black.copy(alpha = 0.35f),
+                                            RoundedCornerShape(20.dp)
+                                    )
+                                    .padding(horizontal = 24.dp, vertical = 8.dp)
+                                    .align(Alignment.TopCenter)
             )
         }
 
@@ -275,21 +355,8 @@ fun ScannerScreen(innerPadding: PaddingValues) {
                                                             ImageCapture.OutputFileResults
                                             ) {
                                                 val originalUri = android.net.Uri.fromFile(tempFile)
-
-                                                // ✅ Corregir rotación ANTES de procesar
-                                                val correctedUri =
-                                                        ImageUtils.fixImageRotation(
-                                                                context,
-                                                                originalUri
-                                                        )
-
-                                                vm.onCaptureSuccess(correctedUri)
-
-                                                // Limpiar archivo temporal original si se creó uno
-                                                // nuevo
-                                                if (correctedUri != originalUri) {
-                                                    tempFile.delete()
-                                                }
+                                                // La rotación y recorte se manejan en el ViewModel
+                                                vm.onCaptureSuccess(originalUri)
                                             }
                                             override fun onError(exception: ImageCaptureException) {
                                                 vm.onCaptureError(

@@ -39,9 +39,9 @@ fun CameraPreview(
         val provider = ProcessCameraProvider.getInstance(context).get()
         cameraProvider = provider
 
-        // Usar 16:9 en ambos para que la captura coincida con el preview
+        // Usar 4:3 — es la relación nativa del sensor y más cercana al cuadrado guía
         val resolutionSelector = ResolutionSelector.Builder()
-            .setAspectRatioStrategy(AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY)
+            .setAspectRatioStrategy(AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY)
             .build()
 
         val preview = Preview.Builder()
