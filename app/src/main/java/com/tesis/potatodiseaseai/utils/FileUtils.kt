@@ -130,7 +130,11 @@ object FileUtils {
         try {
             val cacheDir = context.cacheDir
             val tempFiles = cacheDir.listFiles { file ->
-                file.name.startsWith("temp_") && file.extension == "jpg"
+                file.extension == "jpg" && (
+                    file.name.startsWith("temp_") ||
+                    file.name.startsWith("corrected_") ||
+                    file.name.startsWith("cropped_")
+                )
             }
             
             tempFiles?.forEach { file ->

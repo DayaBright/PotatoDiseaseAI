@@ -101,14 +101,14 @@ fun ResultScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(250.dp),
+                        .aspectRatio(1f), // Imagen guardada es 1:1 cuadrada
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
                     CachedImage(
                         imageUri = imageUri,
                         contentDescription = stringResource(R.string.cd_analyzed_image),
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                        contentScale = ContentScale.Fit
                     )
                 }
             }

@@ -115,6 +115,11 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 // ── PASO 4: Clasificar ──
                 val result = localClassifier.classify(croppedBitmap)
 
+                // Validar que la clasificación fue exitosa
+                if (result.error != null || result.label.isBlank()) {
+                    throw Exception(result.error?.message ?: "Clasificación fallida")
+                }
+
                 // ── PASO 5: Guardar imagen recortada (UNA sola vez, directo) ──
                 val directory = File(ctx.filesDir, "detections")
                 if (!directory.exists()) directory.mkdirs()
@@ -156,6 +161,14 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 if (croppedBitmap != null && croppedBitmap !== rotatedBitmap) croppedBitmap.recycle()
                 if (rotatedBitmap != null && rotatedBitmap !== rawBitmap) rotatedBitmap.recycle()
                 rawBitmap?.recycle()
+
+                // Limpiar archivo temporal de captura
+                try {
+                    val sourceFile = File(sourceUri.path ?: "")
+                    if (sourceFile.exists() && sourceFile.name.startsWith("temp_")) {
+                        sourceFile.delete()
+                    }
+                } catch (_: Exception) { }
             }
         }
     }
