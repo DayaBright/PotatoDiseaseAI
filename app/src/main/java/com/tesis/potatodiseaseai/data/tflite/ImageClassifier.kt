@@ -16,7 +16,7 @@ class ImageClassifierHelper(context: Context) {
     private var classifier: ImageClassifier? = null
     private var initError: AppError? = null
     
-    private val modelName = "modelo_papa.tflite"
+    private val modelName = "potato_classifier.tflite"
     private val labels: List<String> = runCatching {
         context.assets.open("labels.txt").bufferedReader().use { it.readLines() }
     }.getOrDefault(emptyList())
@@ -24,7 +24,7 @@ class ImageClassifierHelper(context: Context) {
     data class ClassifierResult(
         val label: String,
         val confidence: Float,
-        val error: AppError? = null  // ✅ NUEVO: Incluir error en resultado
+        val error: AppError? = null  
     )
 
     init {
