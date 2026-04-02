@@ -260,7 +260,7 @@ fun ScannerScreen(innerPadding: PaddingValues) {
                         vm.toggleFlash()
                         cameraState.value?.cameraControl?.enableTorch(
                                 newFlashState
-                        ) // ✅ Controla el hardware
+                        ) 
                     },
                     modifier =
                             Modifier.padding(start = 16.dp)

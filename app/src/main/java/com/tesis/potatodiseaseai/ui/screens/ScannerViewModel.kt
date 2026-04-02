@@ -108,9 +108,6 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 rotatedBitmap = fixRotationInMemory(ctx, sourceUri, rawBitmap)
 
                 // ── PASO 3: Recortar cuadrado que coincide con la guía visual ──
-                // La guía = 85% del minDimension de pantalla
-                // FILL_CENTER escala la imagen para llenar toda la pantalla,
-                // así que debemos calcular qué parte de la imagen es visible.
                 val guideFraction = 0.85f
                 val displayMetrics = ctx.resources.displayMetrics
                 val screenW = displayMetrics.widthPixels.toFloat()
@@ -167,7 +164,8 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                     confidence = result.confidence,
                     isClassifying = false,
                     shouldNavigateToResult = true,
-                    savedDetectionId = detectionId
+                    savedDetectionId = detectionId,
+                    flashEnabled = false // La cámara se desvincula 
                 )
             } catch (e: Exception) {
                 val appError = ErrorHandler.handleException(e, "Clasificación y guardado")
@@ -194,7 +192,6 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
 
     /**
      * Corrige la rotación del bitmap en memoria según EXIF.
-     * NO guarda ni re-decodifica.
      */
     private fun fixRotationInMemory(context: android.content.Context, uri: Uri, bitmap: Bitmap): Bitmap {
         return try {

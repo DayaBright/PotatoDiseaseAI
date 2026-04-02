@@ -1,7 +1,7 @@
 package com.tesis.potatodiseaseai.ui.screens.components
 
 import android.content.Context
-import android.view.WindowManager
+
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -44,8 +44,7 @@ fun CameraPreview(
             .setAspectRatioStrategy(AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY)
             .build()
 
-        val displayRotation = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager)
-            .defaultDisplay.rotation
+        val displayRotation = previewView.display?.rotation ?: android.view.Surface.ROTATION_0
 
         val preview = Preview.Builder()
             .setTargetRotation(displayRotation)

@@ -77,7 +77,7 @@ object DiseaseDatabase {
                 "Solarizar el suelo antes de plantar"
             )
         ),
-        "pests" to DiseaseInfo(
+        "pest" to DiseaseInfo(
             name = "Plagas",
             recommendations = listOf(
                 "Identificar la plaga específica",

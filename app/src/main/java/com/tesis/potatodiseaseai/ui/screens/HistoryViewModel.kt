@@ -35,7 +35,6 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
                 }
                 .collect { detections ->
                     // Recalcular almacenamiento cada vez que cambia la lista
-                    // (nuevo análisis, eliminación desde cualquier pantalla)
                     val size = repository.getTotalStorageSize()
                     _uiState.update { 
                         it.copy(
