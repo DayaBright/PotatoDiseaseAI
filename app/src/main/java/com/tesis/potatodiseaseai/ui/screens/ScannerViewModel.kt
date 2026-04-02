@@ -14,7 +14,6 @@ import com.tesis.potatodiseaseai.data.model.DiseaseDatabase
 import com.tesis.potatodiseaseai.data.tflite.ImageClassifierHelper
 import com.tesis.potatodiseaseai.utils.AppLogger
 import com.tesis.potatodiseaseai.utils.ErrorHandler
-import com.tesis.potatodiseaseai.utils.ImageUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -108,8 +107,28 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 // ── PASO 2: Corregir rotación EXIF (en memoria, sin guardar) ──
                 rotatedBitmap = fixRotationInMemory(ctx, sourceUri, rawBitmap)
 
-                // ── PASO 3: Recortar cuadrado 1:1 centrado (coincide con la guía) ──
-                croppedBitmap = ImageUtils.centerCropSquare(rotatedBitmap)
+                // ── PASO 3: Recortar cuadrado que coincide con la guía visual ──
+                // La guía = 85% del minDimension de pantalla
+                // FILL_CENTER escala la imagen para llenar toda la pantalla,
+                // así que debemos calcular qué parte de la imagen es visible.
+                val guideFraction = 0.85f
+                val displayMetrics = ctx.resources.displayMetrics
+                val screenW = displayMetrics.widthPixels.toFloat()
+                val screenH = displayMetrics.heightPixels.toFloat()
+                val imgW = rotatedBitmap.width.toFloat()
+                val imgH = rotatedBitmap.height.toFloat()
+
+                // FILL_CENTER usa el factor de escala mayor para llenar toda la vista
+                val fillScale = maxOf(screenW / imgW, screenH / imgH)
+
+                // Tamaño de la guía en pantalla (px) → convertir a píxeles de imagen
+                val guideScreenPx = minOf(screenW, screenH) * guideFraction
+                val guideCamPx = (guideScreenPx / fillScale).toInt()
+                    .coerceAtMost(minOf(rotatedBitmap.width, rotatedBitmap.height))
+
+                val x = (rotatedBitmap.width - guideCamPx) / 2
+                val y = (rotatedBitmap.height - guideCamPx) / 2
+                croppedBitmap = Bitmap.createBitmap(rotatedBitmap, x, y, guideCamPx, guideCamPx)
                 AppLogger.debug(TAG, "Imagen recortada: ${croppedBitmap.width}x${croppedBitmap.height}")
 
                 // ── PASO 4: Clasificar ──
