@@ -25,7 +25,6 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
     
     init {
         loadDetections()
-        loadStorageSize()
     }
     
     private fun loadDetections() {
@@ -35,20 +34,17 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
                     _uiState.update { it.copy(error = e.message, isLoading = false) }
                 }
                 .collect { detections ->
+                    // Recalcular almacenamiento cada vez que cambia la lista
+                    // (nuevo análisis, eliminación desde cualquier pantalla)
+                    val size = repository.getTotalStorageSize()
                     _uiState.update { 
                         it.copy(
                             detections = detections,
+                            storageSize = size,
                             isLoading = false
                         )
                     }
                 }
-        }
-    }
-    
-    private fun loadStorageSize() {
-        viewModelScope.launch {
-            val size = repository.getTotalStorageSize()
-            _uiState.update { it.copy(storageSize = size) }
         }
     }
     
@@ -65,7 +61,7 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
             val success = repository.deleteDetection(detection)
             if (success) {
                 dismissDeleteDialog()
-                loadStorageSize()
+                // storageSize se recalcula automáticamente en el collector del Flow
             } else {
                 _uiState.update { 
                     it.copy(error = "Error al eliminar la detección") 
