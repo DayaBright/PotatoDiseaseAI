@@ -8,9 +8,7 @@ import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.tesis.potatodiseaseai.data.database.AppDatabase
-import com.tesis.potatodiseaseai.data.database.DetectionEntity
-import com.tesis.potatodiseaseai.data.model.DiseaseDatabase
+import com.tesis.potatodiseaseai.data.repository.AnalisisRepository
 import com.tesis.potatodiseaseai.data.tflite.ImageClassifierHelper
 import com.tesis.potatodiseaseai.utils.AppLogger
 import com.tesis.potatodiseaseai.utils.ErrorHandler
@@ -48,7 +46,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
     private val _uiState = MutableStateFlow(ScannerUiState())
     val uiState: StateFlow<ScannerUiState> = _uiState.asStateFlow()
 
-    private val database = AppDatabase.getDatabase(application.applicationContext)
+    private val repository = AnalisisRepository(application.applicationContext)
 
     fun toggleFlash() {
         _uiState.value = _uiState.value.copy(flashEnabled = !_uiState.value.flashEnabled)
@@ -149,13 +147,11 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 AppLogger.debug(TAG, "✓ Imagen guardada: ${file.absolutePath}")
 
                 // ── PASO 6: Guardar en Room ──
-                val detection = DetectionEntity(
-                    imageUri = savedUri.toString(),
-                    disease = result.label,
-                    diseaseName = DiseaseDatabase.getDiseaseName(result.label),
-                    confidence = result.confidence
+                val detectionId = repository.insertAnalisis(
+                    labelCnn = result.label,
+                    imagenUri = savedUri.toString(),
+                    precision = result.confidence
                 )
-                val detectionId = database.detectionDao().insert(detection)
 
                 // ── PASO 7: Actualizar UI ──
                 _uiState.value = _uiState.value.copy(

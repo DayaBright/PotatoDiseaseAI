@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.data.model.DiseaseDatabase
-import com.tesis.potatodiseaseai.data.repository.DetectionRepository
+import com.tesis.potatodiseaseai.data.repository.AnalisisRepository
 import com.tesis.potatodiseaseai.ui.screens.components.CachedImage
 import com.tesis.potatodiseaseai.ui.screens.components.DiagnosisCard
 import kotlinx.coroutines.launch
@@ -37,7 +37,7 @@ fun ResultScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val repository = remember { DetectionRepository(context) }
+    val repository = remember { AnalisisRepository(context) }
     
     var showDeleteDialog by remember { mutableStateOf(false) }
     
@@ -55,7 +55,7 @@ fun ResultScreen(
                     onClick = {
                         scope.launch {
                             detectionId?.let {
-                                if (repository.deleteDetectionById(it, imageUri)) {
+                                if (repository.deleteAnalisisById(it, imageUri)) {
                                     onDeleted()
                                 }
                             }

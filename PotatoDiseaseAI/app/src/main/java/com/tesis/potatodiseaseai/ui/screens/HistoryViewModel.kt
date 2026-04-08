@@ -3,72 +3,64 @@ package com.tesis.potatodiseaseai.ui.screens
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.tesis.potatodiseaseai.data.database.DetectionEntity
-import com.tesis.potatodiseaseai.data.repository.DetectionRepository
+import com.tesis.potatodiseaseai.data.database.AnalisisConEnfermedad
+import com.tesis.potatodiseaseai.data.repository.AnalisisRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 data class HistoryUiState(
-    val detections: List<DetectionEntity> = emptyList(),
+    val analisis: List<AnalisisConEnfermedad> = emptyList(),
     val storageSize: Double = 0.0,
     val isLoading: Boolean = true,
     val error: String? = null,
-    val showDeleteDialog: DetectionEntity? = null
+    val showDeleteDialog: AnalisisConEnfermedad? = null
 )
 
 class HistoryViewModel(application: Application) : AndroidViewModel(application) {
-    
-    private val repository = DetectionRepository(application)
-    
+
+    private val repository = AnalisisRepository(application)
+
     private val _uiState = MutableStateFlow(HistoryUiState())
     val uiState: StateFlow<HistoryUiState> = _uiState.asStateFlow()
-    
+
     init {
-        loadDetections()
+        loadAnalisis()
     }
-    
-    private fun loadDetections() {
+
+    private fun loadAnalisis() {
         viewModelScope.launch {
-            repository.getAllDetections()
+            repository.getAllAnalisis()
                 .catch { e ->
                     _uiState.update { it.copy(error = e.message, isLoading = false) }
                 }
-                .collect { detections ->
-                    // Recalcular almacenamiento cada vez que cambia la lista
+                .collect { lista ->
                     val size = repository.getTotalStorageSize()
-                    _uiState.update { 
-                        it.copy(
-                            detections = detections,
-                            storageSize = size,
-                            isLoading = false
-                        )
+                    _uiState.update {
+                        it.copy(analisis = lista, storageSize = size, isLoading = false)
                     }
                 }
         }
     }
-    
-    fun showDeleteDialog(detection: DetectionEntity) {
-        _uiState.update { it.copy(showDeleteDialog = detection) }
+
+    fun showDeleteDialog(analisis: AnalisisConEnfermedad) {
+        _uiState.update { it.copy(showDeleteDialog = analisis) }
     }
-    
+
     fun dismissDeleteDialog() {
         _uiState.update { it.copy(showDeleteDialog = null) }
     }
-    
-    fun deleteDetection(detection: DetectionEntity) {
+
+    fun deleteAnalisis(analisis: AnalisisConEnfermedad) {
         viewModelScope.launch {
-            val success = repository.deleteDetection(detection)
+            val success = repository.deleteAnalisis(analisis)
             if (success) {
                 dismissDeleteDialog()
-                // storageSize se recalcula automáticamente en el collector del Flow
             } else {
-                _uiState.update { 
-                    it.copy(error = "Error al eliminar la detección") 
-                }
+                _uiState.update { it.copy(error = "Error al eliminar el análisis") }
             }
         }
     }
-    
+
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }

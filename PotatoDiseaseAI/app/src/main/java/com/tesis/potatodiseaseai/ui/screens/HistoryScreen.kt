@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tesis.potatodiseaseai.R
-import com.tesis.potatodiseaseai.data.database.DetectionEntity
+import com.tesis.potatodiseaseai.data.database.AnalisisConEnfermedad
 import com.tesis.potatodiseaseai.ui.screens.components.CachedImage
 import com.tesis.potatodiseaseai.ui.theme.Dimensions
 import com.tesis.potatodiseaseai.utils.DateUtils
@@ -34,7 +34,6 @@ fun HistoryScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Mostrar errores con Snackbar
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
             snackbarHostState.showSnackbar(error)
@@ -53,12 +52,8 @@ fun HistoryScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-        // Indicador de carga
         if (uiState.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else {
@@ -67,7 +62,7 @@ fun HistoryScreen(
                     .fillMaxSize()
                     .padding(padding)
             ) {
-                // Info del almacenamiento
+                // Info de almacenamiento
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -88,7 +83,7 @@ fun HistoryScreen(
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = "${uiState.detections.size}",
+                                text = "${uiState.analisis.size}",
                                 style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -107,8 +102,7 @@ fun HistoryScreen(
                     }
                 }
 
-                // Lista de detecciones
-                if (uiState.detections.isEmpty()) {
+                if (uiState.analisis.isEmpty()) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -140,18 +134,18 @@ fun HistoryScreen(
                         ),
                         verticalArrangement = Arrangement.spacedBy(Dimensions.cardSpacing)
                     ) {
-                        items(uiState.detections, key = { it.id }) { detection ->
-                            DetectionCard(
-                                detection = detection,
+                        items(uiState.analisis, key = { it.analisis.id }) { item ->
+                            AnalisisCard(
+                                item = item,
                                 onClick = {
                                     onNavigateToResult(
-                                        detection.imageUri,
-                                        detection.disease,
-                                        detection.confidence,
-                                        detection.id
+                                        item.analisis.imagenCapturada,
+                                        item.enfermedad.labelCnn,
+                                        item.analisis.precision,
+                                        item.analisis.id
                                     )
                                 },
-                                onDelete = { viewModel.showDeleteDialog(detection) }  // ✅ Llamar ViewModel
+                                onDelete = { viewModel.showDeleteDialog(item) }
                             )
                         }
                     }
@@ -160,18 +154,16 @@ fun HistoryScreen(
         }
     }
 
-    // Diálogo de confirmación
-    uiState.showDeleteDialog?.let { detection ->
+    // Diálogo de confirmación de eliminación
+    uiState.showDeleteDialog?.let { item ->
         AlertDialog(
             onDismissRequest = { viewModel.dismissDeleteDialog() },
             title = { Text(stringResource(R.string.history_delete_title)) },
-            text = { 
-                Text(stringResource(R.string.history_delete_message, detection.diseaseName)) 
+            text = {
+                Text(stringResource(R.string.history_delete_message, item.enfermedad.nombre))
             },
             confirmButton = {
-                TextButton(
-                    onClick = { viewModel.deleteDetection(detection) }  // ✅ Llamar ViewModel
-                ) {
+                TextButton(onClick = { viewModel.deleteAnalisis(item) }) {
                     Text(
                         stringResource(R.string.history_delete_confirm),
                         color = MaterialTheme.colorScheme.error
@@ -188,12 +180,12 @@ fun HistoryScreen(
 }
 
 @Composable
-private fun DetectionCard(
-    detection: DetectionEntity,
+private fun AnalisisCard(
+    item: AnalisisConEnfermedad,
     onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val isHealthy = detection.disease.lowercase().contains("healthy")
+    val isHealthy = item.enfermedad.labelCnn.lowercase().contains("healthy")
 
     Card(
         modifier = Modifier
@@ -208,7 +200,7 @@ private fun DetectionCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CachedImage(
-                imageUri = detection.imageUri,
+                imageUri = item.analisis.imagenCapturada,
                 contentDescription = stringResource(R.string.cd_detection_preview),
                 modifier = Modifier
                     .size(Dimensions.thumbnailSize)
@@ -225,28 +217,30 @@ private fun DetectionCard(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = detection.diseaseName,
+                            text = item.enfermedad.nombre,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
                             text = stringResource(
                                 R.string.history_confidence,
-                                String.format("%.1f", detection.confidence * 100)
+                                String.format("%.1f", item.analisis.precision * 100)
                             ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = DateUtils.formatTimestamp(detection.timestamp),
+                            text = DateUtils.formatTimestamp(item.analisis.fechaHora),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Icon(
-                        imageVector = if (isHealthy) Icons.Default.CheckCircle else Icons.Default.Warning,
+                        imageVector = if (isHealthy) Icons.Default.CheckCircle
+                                      else Icons.Default.Warning,
                         contentDescription = null,
-                        tint = if (isHealthy) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                        tint = if (isHealthy) MaterialTheme.colorScheme.primary
+                               else MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(Dimensions.iconSizeSmall)
                     )
                 }
