@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -47,7 +47,7 @@ fun ResultScreen(
     
     if (showDeleteDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
+            onDismissRequest = { },
             title = { Text(stringResource(R.string.result_delete_title)) },
             text = { Text(stringResource(R.string.result_delete_message)) },
             confirmButton = {
@@ -56,7 +56,6 @@ fun ResultScreen(
                         scope.launch {
                             detectionId?.let {
                                 if (repository.deleteDetectionById(it, imageUri)) {
-                                    showDeleteDialog = false
                                     onDeleted()
                                 }
                             }
@@ -70,7 +69,7 @@ fun ResultScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
+                TextButton(onClick = { }) {
                     Text(stringResource(R.string.history_delete_cancel))
                 }
             }
@@ -83,7 +82,7 @@ fun ResultScreen(
                 title = { Text(stringResource(R.string.result_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, stringResource(R.string.result_back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.result_back))
                     }
                 }
             )
@@ -184,7 +183,7 @@ fun ResultScreen(
             // Botón para eliminar
             item {
                 Button(
-                    onClick = { showDeleteDialog = true },
+                    onClick = { },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error

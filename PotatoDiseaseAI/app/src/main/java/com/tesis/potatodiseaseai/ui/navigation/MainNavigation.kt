@@ -9,6 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.tesis.potatodiseaseai.ui.screens.*
+import androidx.core.content.edit
 
 @Composable
 fun MainNavigation() {
@@ -62,7 +63,7 @@ fun MainNavigation() {
                 OnboardingScreen(
                     onFinish = {
                         // Marcar como visto
-                        prefs.edit().putBoolean("has_seen_onboarding", true).apply()
+                        prefs.edit { putBoolean("has_seen_onboarding", true) }
                         // Navegar al scanner y limpiar el backstack
                         navController.navigate(NavigationHelper.Routes.SCANNER) {
                             popUpTo(NavigationHelper.Routes.ONBOARDING) { inclusive = true }
@@ -139,4 +140,4 @@ fun MainNavigation() {
             }
         }
     }
-}
+}

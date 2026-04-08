@@ -2,7 +2,6 @@ package com.tesis.potatodiseaseai.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ContactSupport
 import androidx.compose.material.icons.outlined.*
@@ -12,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.ui.theme.Dimensions
 import com.tesis.potatodiseaseai.ui.theme.PotatoDiseaseAITheme

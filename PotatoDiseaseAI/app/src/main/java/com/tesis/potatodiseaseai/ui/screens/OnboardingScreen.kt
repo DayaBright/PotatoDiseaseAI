@@ -11,6 +11,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -253,7 +254,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     if (!isLastPage) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
-                                imageVector = Icons.Outlined.ArrowForward,
+                                imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                         )
