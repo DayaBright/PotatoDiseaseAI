@@ -1,5 +1,6 @@
 package com.tesis.potatodiseaseai.ui.screens
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -8,6 +9,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.automirrored.outlined.TrendingDown
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -132,7 +135,7 @@ fun DiseaseDetailScreen(
             if (enfermedad.impacto.isNotBlank() && !enfermedad.impacto.startsWith("Clase de referencia")) {
                 item {
                     DetailInfoCard(
-                        icon = Icons.Outlined.TrendingDown,
+                        icon = Icons.AutoMirrored.Outlined.TrendingDown,
                         title = "Impacto y Consecuencias",
                         content = enfermedad.impacto
                     )
@@ -241,7 +244,7 @@ fun DiseaseDetailScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = Icons.Outlined.MenuBook,
+                                    imageVector = Icons.AutoMirrored.Outlined.MenuBook,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(Dimensions.iconSizeSmall)
@@ -313,6 +316,7 @@ private fun DetailInfoCard(
  * Obtiene el ID de un recurso drawable dado su nombre.
  * Retorna 0 si no existe o el nombre está vacío.
  */
+@SuppressLint("DiscouragedApi")
 private fun getDrawableResId(context: Context, name: String): Int {
     if (name.isBlank()) return 0
     return context.resources.getIdentifier(name, "drawable", context.packageName)
