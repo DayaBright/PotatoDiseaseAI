@@ -42,6 +42,8 @@ object NavigationHelper {
         const val SCANNER = "scanner"
         const val HISTORY = "history"
         const val HELP = "help"
+        const val DISEASE_DETAIL_BASE = "disease_detail"
+        const val DISEASE_DETAIL_FULL = "disease_detail/{enfermedadId}"
         const val RESULT_BASE = "result"
         const val RESULT_FULL = "result/{imageUri}/{disease}/{confidence}/{detectionId}"
     }
@@ -54,5 +56,10 @@ object NavigationHelper {
         const val DISEASE = "disease"
         const val CONFIDENCE = "confidence"
         const val DETECTION_ID = "detectionId"
+        const val ENFERMEDAD_ID = "enfermedadId"
+    }
+
+    fun buildDiseaseDetailRoute(enfermedadId: Long): String {
+        return "disease_detail/$enfermedadId"
     }
 }

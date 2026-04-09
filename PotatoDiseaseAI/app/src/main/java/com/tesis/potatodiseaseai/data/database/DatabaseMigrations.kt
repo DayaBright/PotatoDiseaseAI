@@ -52,6 +52,32 @@ object DatabaseMigrations {
     }
 
     /**
+     * Migración v2 → v3.
+     * Actualiza los campos imagenReferencia e imagenGradcam con los nombres
+     * de los drawables reales que fueron agregados al proyecto.
+     */
+    val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            val imageMap = mapOf(
+                "late blight"    to Pair("lateblight_normal", "lateblight_gradcam"),
+                "early blight"   to Pair("earlyblight_normal", "earlyblight_gradcam"),
+                "leafroll virus" to Pair("leafroll_normal", "leafroll_gradcam"),
+                "mosaic virus"   to Pair("mosaic_normal", "mosaic_gradcam"),
+                "bacterial wilt" to Pair("", ""),
+                "nematode"       to Pair("nematode_normal", "nematode_gradacam"),
+                "pest"           to Pair("pest_normal", "pest_gradcam"),
+                "healthy"        to Pair("healthy_normal", "")
+            )
+            for ((label, images) in imageMap) {
+                database.execSQL(
+                    "UPDATE `enfermedades` SET imagenReferencia = ?, imagenGradcam = ? WHERE labelCnn = ?",
+                    arrayOf(images.first, images.second, label)
+                )
+            }
+        }
+    }
+
+    /**
      * Inserta las 8 clases del modelo CNN como datos semilla.
      * Llamado desde MIGRATION_1_2 (usuarios existentes) y desde
      * el Callback onCreate (instalaciones nuevas).
@@ -79,7 +105,7 @@ object DatabaseMigrations {
             "Manchas irregulares de aspecto húmedo y acuoso, bordes difusos (sin anillos) y color marrón-negro.",
             "En condiciones de alta humedad aparece felpilla blanca (micelio) en el envés de la hoja.",
             "Usar variedades resistentes del catálogo INIAP|Aplicar fungicidas preventivos (mancozeb) y curativos (metalaxil)|Eliminar plantas voluntarias (guachas) que son focos de infección",
-            "", "", "INIAP Ecuador; Agrios G.N. Plant Pathology 5th ed."
+            "lateblight_normal", "lateblight_gradcam", "INIAP Ecuador; Agrios G.N. Plant Pathology 5th ed."
         ),
         arrayOf(
             "early blight",
@@ -89,7 +115,7 @@ object DatabaseMigrations {
             "Manchas circulares o angulares con anillos concéntricos (patrón de diana u ojo de buey) y textura seca.",
             "Manchas rodeadas por halo clorótico amarillo; se inician en hojas basales (más viejas).",
             "Nutrición balanceada con nitrógeno para fortalecer la planta|Rotación de cultivos con especies no solanáceas|Aplicar fungicidas (azoxistrobina, boscalid) al inicio de floración",
-            "", "", "INIAP Ecuador; Agrios G.N. Plant Pathology 5th ed."
+            "earlyblight_normal", "earlyblight_gradcam", "INIAP Ecuador; Agrios G.N. Plant Pathology 5th ed."
         ),
         arrayOf(
             "leafroll virus",
@@ -99,7 +125,7 @@ object DatabaseMigrations {
             "Enrollamiento hacia arriba de los folíolos dándoles forma de tubo o canaleta.",
             "Hojas con textura rígida y coriácea (crujiente al tacto) y coloración rojiza o púrpura en los márgenes.",
             "Control estricto de áfidos vectores con insecticidas sistémicos (imidacloprid)|Uso exclusivo de semilla certificada libre de virus",
-            "", "", "INIAP Ecuador; Salazar L.F. Potato Viruses and their Management"
+            "leafroll_normal", "leafroll_gradcam", "INIAP Ecuador; Salazar L.F. Potato Viruses and their Management"
         ),
         arrayOf(
             "mosaic virus",
@@ -109,7 +135,7 @@ object DatabaseMigrations {
             "Patrón mosaico (áreas verde oscuro, verde claro y amarillo intercaladas) en lámina foliar relativamente plana.",
             "Superficie rugosa o ampollada (con bultos) y deformación de los bordes foliares.",
             "Desinfección de herramientas con hipoclorito al 1% para evitar transmisión mecánica|Eliminar plantas enfermas del campo|Controlar áfidos vectores",
-            "", "", "INIAP Ecuador; Salazar L.F. Potato Viruses and their Management"
+            "mosaic_normal", "mosaic_gradcam", "INIAP Ecuador; Salazar L.F. Potato Viruses and their Management"
         ),
         arrayOf(
             "bacterial wilt",
@@ -129,7 +155,7 @@ object DatabaseMigrations {
             "Clorosis difusa generalizada y enanismo de la planta.",
             "Plantas pequeñas agrupadas en rodales o manchones irregulares dentro del campo.",
             "Análisis de suelo antes de la siembra para detectar presencia del nematodo|Rotaciones largas y uso de variedades con tolerancia documentada por INIAP",
-            "", "", "INIAP Ecuador; CIP (International Potato Center)"
+            "nematode_normal", "nematode_gradacam", "INIAP Ecuador; CIP (International Potato Center)"
         ),
         arrayOf(
             "pest",
@@ -139,7 +165,7 @@ object DatabaseMigrations {
             "Destrucción mecánica irregular del tejido foliar: huecos, perforaciones o minas serpenteadas.",
             "Aspecto apolillado de la hoja. La mosca minadora deja túneles blancos-amarillentos visibles al trasluz.",
             "Uso de trampas de feromonas para polillas y trampas amarillas para mosca minadora|Control biológico con hongos entomopatógenos como Beauveria bassiana",
-            "", "", "INIAP Ecuador; SENASA Perú"
+            "pest_normal", "pest_gradcam", "INIAP Ecuador; SENASA Perú"
         ),
         arrayOf(
             "healthy",
@@ -149,7 +175,7 @@ object DatabaseMigrations {
             "Lámina foliar completamente verde, superficie lisa, plana y turgente.",
             "Color verde uniforme sin manchas, lesiones, deformaciones ni signos de patógenos.",
             "Programa preventivo de monitoreo quincenal|Nutrición balanceada N-P-K según análisis de suelo",
-            "", "", "INIAP Ecuador"
+            "healthy_normal", "", "INIAP Ecuador"
         )
     )
 }

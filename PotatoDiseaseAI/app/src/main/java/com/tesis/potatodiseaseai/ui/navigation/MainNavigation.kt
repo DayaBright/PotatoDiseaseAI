@@ -1,5 +1,7 @@
 package com.tesis.potatodiseaseai.ui.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
@@ -29,9 +31,10 @@ fun MainNavigation() {
             val backStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = backStackEntry?.destination?.route
 
-            // Ocultar bottom bar en onboarding y result
+            // Ocultar bottom bar en onboarding, result y detalle de enfermedad
             if (currentRoute != NavigationHelper.Routes.ONBOARDING &&
-                currentRoute?.startsWith(NavigationHelper.Routes.RESULT_BASE) != true
+                currentRoute?.startsWith(NavigationHelper.Routes.RESULT_BASE) != true &&
+                currentRoute?.startsWith(NavigationHelper.Routes.DISEASE_DETAIL_BASE) != true
             ) {
                 NavigationBar {
                     Screen.bottomTabs.forEach { screen ->
@@ -111,7 +114,44 @@ fun MainNavigation() {
             
             // Help
             composable(NavigationHelper.Routes.HELP) { 
-                HelpScreen(padding) 
+                HelpScreen(
+                    innerPadding = padding,
+                    onNavigateToDetail = { enfermedadId ->
+                        val route = NavigationHelper.buildDiseaseDetailRoute(enfermedadId)
+                        navController.navigate(route)
+                    }
+                )
+            }
+            
+            // Disease Detail
+            composable(
+                route = NavigationHelper.Routes.DISEASE_DETAIL_FULL,
+                arguments = listOf(
+                    navArgument(NavigationHelper.Args.ENFERMEDAD_ID) { type = NavType.LongType }
+                )
+            ) { backStackEntry ->
+                val enfermedadId = backStackEntry.arguments?.getLong(NavigationHelper.Args.ENFERMEDAD_ID) ?: 0L
+                val detailContext = LocalContext.current
+                val db = remember { com.tesis.potatodiseaseai.data.database.AppDatabase.getDatabase(detailContext) }
+                var enfermedad by remember { mutableStateOf<com.tesis.potatodiseaseai.data.database.EnfermedadEntity?>(null) }
+                
+                LaunchedEffect(enfermedadId) {
+                    enfermedad = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        db.enfermedadDao().getById(enfermedadId)
+                    }
+                }
+                
+                enfermedad?.let { enf ->
+                    DiseaseDetailScreen(
+                        enfermedad = enf,
+                        onBack = { navController.popBackStack() }
+                    )
+                } ?: Box(
+                    modifier = androidx.compose.ui.Modifier.fillMaxSize(),
+                    contentAlignment = androidx.compose.ui.Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
             
             // Result

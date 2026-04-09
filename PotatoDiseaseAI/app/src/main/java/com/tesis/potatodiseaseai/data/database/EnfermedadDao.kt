@@ -19,4 +19,8 @@ interface EnfermedadDao {
 
     @Query("SELECT COUNT(*) FROM enfermedades")
     suspend fun count(): Int
+
+    /** Busca una enfermedad por su ID */
+    @Query("SELECT * FROM enfermedades WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): EnfermedadEntity?
 }

@@ -31,7 +31,10 @@ abstract class AppDatabase : RoomDatabase() {
                     DatabaseConstants.DATABASE_NAME
                 )
                     // Migración explícita v1→v2 (sin perder datos en futuras versiones)
-                    .addMigrations(DatabaseMigrations.MIGRATION_1_2)
+                    .addMigrations(
+                        DatabaseMigrations.MIGRATION_1_2,
+                        DatabaseMigrations.MIGRATION_2_3
+                    )
                     // Insertar datos semilla en instalaciones totalmente nuevas
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
