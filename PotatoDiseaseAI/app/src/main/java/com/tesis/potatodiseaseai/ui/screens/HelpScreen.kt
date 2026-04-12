@@ -1,5 +1,6 @@
 package com.tesis.potatodiseaseai.ui.screens
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -23,12 +24,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.data.database.EnfermedadEntity
 import com.tesis.potatodiseaseai.ui.theme.Dimensions
-import com.tesis.potatodiseaseai.ui.theme.PotatoDiseaseAITheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,33 +63,6 @@ fun HelpScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(Dimensions.spacingMedium)
             ) {
-                // ── Sección: Cómo usar la app ──
-                item {
-                    HelpSection(
-                        title = "¿Cómo usar la aplicación?",
-                        icon = Icons.Outlined.Info,
-                        items = listOf(
-                            "Captura una foto de la hoja de papa desde la pantalla de escaneo",
-                            "Espera el análisis automático con IA",
-                            "Revisa el diagnóstico y las recomendaciones",
-                            "Consulta el historial de análisis previos"
-                        )
-                    )
-                }
-
-                // ── Sección: Consejos de captura ──
-                item {
-                    HelpSection(
-                        title = "Consejos para mejores resultados",
-                        icon = Icons.Outlined.PhotoCamera,
-                        items = listOf(
-                            "Usa buena iluminación natural",
-                            "Enfoca bien la hoja afectada",
-                            "Evita sombras sobre la hoja",
-                            "Captura hojas con síntomas visibles"
-                        )
-                    )
-                }
 
                 // ── Sección: Guía de Patologías ──
                 item {
@@ -328,6 +300,7 @@ private fun HelpSection(
  * Obtiene el ID de un recurso drawable dado su nombre.
  * Retorna 0 si no existe o el nombre está vacío.
  */
+@SuppressLint("DiscouragedApi")
 private fun getDrawableResId(context: Context, name: String): Int {
     if (name.isBlank()) return 0
     return context.resources.getIdentifier(name, "drawable", context.packageName)

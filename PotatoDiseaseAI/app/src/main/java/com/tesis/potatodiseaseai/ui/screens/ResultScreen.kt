@@ -1,18 +1,15 @@
 package com.tesis.potatodiseaseai.ui.screens
 
-import androidx.compose.foundation.background
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -47,29 +44,30 @@ fun ResultScreen(
     
     if (showDeleteDialog) {
         AlertDialog(
-            onDismissRequest = { },
+            onDismissRequest = { showDeleteDialog = false },
             title = { Text(stringResource(R.string.result_delete_title)) },
             text = { Text(stringResource(R.string.result_delete_message)) },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        scope.launch {
-                            detectionId?.let {
-                                if (repository.deleteAnalisisById(it, imageUri)) {
-                                    onDeleted()
-                                }
-                            }
-                        }
+    TextButton(
+        onClick = {
+            showDeleteDialog = false
+            scope.launch {
+                detectionId?.let {
+                    if (repository.deleteAnalisisById(it, imageUri)) {
+                        onDeleted()
                     }
-                ) {
-                    Text(
-                        stringResource(R.string.history_delete_confirm),
-                        color = MaterialTheme.colorScheme.error
-                    )
                 }
-            },
+            }
+        }
+    ) {
+        Text(
+            stringResource(R.string.history_delete_confirm),
+            color = MaterialTheme.colorScheme.error
+        )
+    }
+},
             dismissButton = {
-                TextButton(onClick = { }) {
+                TextButton(onClick = { showDeleteDialog = false }) {
                     Text(stringResource(R.string.history_delete_cancel))
                 }
             }
@@ -121,33 +119,6 @@ fun ResultScreen(
                 )
             }
 
-            // Grad-CAM (placeholder)
-            item {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = stringResource(R.string.result_gradcam_title),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = stringResource(R.string.result_gradcam_placeholder),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-
             // Recomendaciones
             item {
                 Card(modifier = Modifier.fillMaxWidth()) {
@@ -183,7 +154,7 @@ fun ResultScreen(
             // Botón para eliminar
             item {
                 Button(
-                    onClick = { },
+                    onClick = { showDeleteDialog = true },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
