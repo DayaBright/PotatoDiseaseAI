@@ -1,0 +1,114 @@
+2026-03-17 17:07:04,004 [INFO] ============================================================
+2026-03-17 17:07:04,004 [INFO] PASO 2 — Auditoría Completa de Datasets
+2026-03-17 17:07:04,005 [INFO] ============================================================
+2026-03-17 17:07:04,005 [INFO] 
+[1] Escaneando datasets...
+2026-03-17 17:07:04,005 [INFO] 
+============================================================
+2026-03-17 17:07:04,005 [INFO] Escaneando: dataset1_warcoder
+2026-03-17 17:07:04,912 [INFO]   Archivos encontrados: 3076
+2026-03-17 17:11:27,014 [INFO] 
+============================================================
+2026-03-17 17:11:27,016 [INFO] Escaneando: dataset2_rgfhz
+2026-03-17 17:11:27,291 [INFO]   Archivos encontrados: 1328
+2026-03-17 17:20:03,663 [INFO] 
+============================================================
+2026-03-17 17:20:03,663 [INFO] Escaneando: dataset3_nirmalsankalana
+2026-03-17 17:20:05,272 [INFO]   Archivos encontrados: 8345
+2026-03-17 17:22:11,428 [INFO] 
+============================================================
+2026-03-17 17:22:11,428 [INFO] Escaneando: dataset4_NoDescription
+2026-03-17 17:22:13,248 [INFO]   Archivos encontrados: 5748
+2026-03-17 17:25:42,560 [INFO] 
+============================================================
+2026-03-17 17:25:42,561 [INFO] Escaneando: dataset5_shahadhossin
+2026-03-17 17:25:43,333 [INFO]   Archivos encontrados: 3500
+2026-03-17 17:26:32,496 [INFO] 
+============================================================
+2026-03-17 17:26:32,497 [INFO] Escaneando: dataset6_markkostantine
+2026-03-17 17:26:33,434 [INFO]   Archivos encontrados: 5236
+2026-03-17 17:33:05,872 [INFO] 
+============================================================
+2026-03-17 17:33:05,873 [INFO] Escaneando: dataset7_nirmalsankalana
+2026-03-17 17:33:06,141 [INFO]   Archivos encontrados: 1328
+2026-03-17 17:38:33,188 [INFO] 
+Total registros escaneados: 28561
+2026-03-17 17:38:33,189 [INFO] Total imágenes corruptas  : 0
+2026-03-17 17:38:33,190 [INFO] 
+[2] Detectando duplicados cruzados...
+2026-03-17 17:38:33,215 [INFO] 
+[Duplicados]
+2026-03-17 17:38:33,216 [INFO]   Entre datasets distintos : 6737
+2026-03-17 17:38:33,216 [INFO]   Entre clases distintas   : 0  ← revisar etiquetado
+2026-03-17 17:38:33,216 [INFO]   Intra-clase / intra-DS   : 45
+2026-03-17 17:38:33,217 [INFO]   Total grupos             : 6782
+2026-03-17 17:38:33,217 [INFO] 
+[3] Detectando subconjuntos...
+2026-03-17 17:38:33,224 [INFO] 
+[SUBCONJUNTO] dataset1_warcoder ⊂ dataset6_markkostantine
+2026-03-17 17:38:33,225 [INFO]   100.0% de dataset1_warcoder encontrado en dataset6_markkostantine
+2026-03-17 17:38:33,225 [INFO]   Imágenes compartidas: 3021
+2026-03-17 17:38:33,226 [INFO]   → EXCLUIR dataset1_warcoder
+2026-03-17 17:38:33,226 [INFO] 
+[SUBCONJUNTO] dataset2_rgfhz ⊂ dataset3_nirmalsankalana
+2026-03-17 17:38:33,227 [INFO]   82.7% de dataset2_rgfhz encontrado en dataset3_nirmalsankalana
+2026-03-17 17:38:33,227 [INFO]   Imágenes compartidas: 1096
+2026-03-17 17:38:33,227 [INFO]   → EXCLUIR dataset2_rgfhz
+2026-03-17 17:38:33,228 [INFO] 
+[SUBCONJUNTO] dataset2_rgfhz ⊂ dataset7_nirmalsankalana
+2026-03-17 17:38:33,228 [INFO]   92.2% de dataset2_rgfhz encontrado en dataset7_nirmalsankalana
+2026-03-17 17:38:33,228 [INFO]   Imágenes compartidas: 1222
+2026-03-17 17:38:33,228 [INFO]   → EXCLUIR dataset2_rgfhz
+2026-03-17 17:38:33,230 [INFO] 
+[SUBCONJUNTO] dataset7_nirmalsankalana ⊂ dataset3_nirmalsankalana
+2026-03-17 17:38:33,231 [INFO]   84.4% de dataset7_nirmalsankalana encontrado en dataset3_nirmalsankalana
+2026-03-17 17:38:33,231 [INFO]   Imágenes compartidas: 1120
+2026-03-17 17:38:33,232 [INFO]   → EXCLUIR dataset7_nirmalsankalana
+2026-03-17 17:38:33,234 [INFO] 
+[4] Generando grillas (25 muestras por clase/dataset)...
+2026-03-17 17:38:33,660 [INFO]   Grilla 1/37: dataset1_warcoder / __REVISAR__ — 25 imgs
+2026-03-17 17:38:34,018 [INFO]   Grilla 2/37: dataset1_warcoder / bacterial_wilt — 25 imgs
+2026-03-17 17:38:34,390 [INFO]   Grilla 3/37: dataset1_warcoder / healthy — 25 imgs
+2026-03-17 17:38:34,777 [INFO]   Grilla 4/37: dataset1_warcoder / late_blight — 25 imgs
+2026-03-17 17:38:35,131 [INFO]   Grilla 5/37: dataset1_warcoder / nematode — 25 imgs
+2026-03-17 17:38:35,499 [INFO]   Grilla 6/37: dataset1_warcoder / pest — 25 imgs
+2026-03-17 17:38:36,889 [INFO]   Grilla 7/37: dataset2_rgfhz / healthy — 25 imgs
+2026-03-17 17:38:39,081 [INFO]   Grilla 8/37: dataset2_rgfhz / leafroll_virus — 25 imgs
+2026-03-17 17:38:41,197 [INFO]   Grilla 9/37: dataset2_rgfhz / mosaic_virus — 25 imgs
+2026-03-17 17:38:41,239 [INFO]   Grilla 10/37: dataset3_nirmalsankalana / bacterial_wilt — 25 imgs
+2026-03-17 17:38:41,280 [INFO]   Grilla 11/37: dataset3_nirmalsankalana / early_blight — 25 imgs
+2026-03-17 17:38:41,321 [INFO]   Grilla 12/37: dataset3_nirmalsankalana / healthy — 25 imgs
+2026-03-17 17:38:41,361 [INFO]   Grilla 13/37: dataset3_nirmalsankalana / late_blight — 25 imgs
+2026-03-17 17:38:41,404 [INFO]   Grilla 14/37: dataset3_nirmalsankalana / leafroll_virus — 25 imgs
+2026-03-17 17:38:41,449 [INFO]   Grilla 15/37: dataset3_nirmalsankalana / mosaic_virus — 25 imgs
+2026-03-17 17:38:41,488 [INFO]   Grilla 16/37: dataset3_nirmalsankalana / nematode — 25 imgs
+2026-03-17 17:38:41,529 [INFO]   Grilla 17/37: dataset3_nirmalsankalana / pest — 25 imgs
+2026-03-17 17:38:41,815 [INFO]   Grilla 18/37: dataset4_NoDescription / __REVISAR__ — 25 imgs
+2026-03-17 17:38:41,860 [INFO]   Grilla 19/37: dataset4_NoDescription / early_blight — 25 imgs
+2026-03-17 17:38:41,897 [INFO]   Grilla 20/37: dataset4_NoDescription / healthy — 25 imgs
+2026-03-17 17:38:41,934 [INFO]   Grilla 21/37: dataset4_NoDescription / late_blight — 25 imgs
+2026-03-17 17:38:42,139 [INFO]   Grilla 22/37: dataset4_NoDescription / pest — 25 imgs
+2026-03-17 17:38:42,173 [INFO]   Grilla 23/37: dataset5_shahadhossin / __REVISAR__ — 25 imgs
+2026-03-17 17:38:42,205 [INFO]   Grilla 24/37: dataset5_shahadhossin / early_blight — 25 imgs
+2026-03-17 17:38:42,239 [INFO]   Grilla 25/37: dataset5_shahadhossin / healthy — 25 imgs
+2026-03-17 17:38:42,273 [INFO]   Grilla 26/37: dataset5_shahadhossin / late_blight — 25 imgs
+2026-03-17 17:38:42,306 [INFO]   Grilla 27/37: dataset5_shahadhossin / nematode — 25 imgs
+2026-03-17 17:38:42,338 [INFO]   Grilla 28/37: dataset5_shahadhossin / pest — 25 imgs
+2026-03-17 17:38:42,671 [INFO]   Grilla 29/37: dataset6_markkostantine / __REVISAR__ — 25 imgs
+2026-03-17 17:38:42,997 [INFO]   Grilla 30/37: dataset6_markkostantine / bacterial_wilt — 25 imgs
+2026-03-17 17:38:43,337 [INFO]   Grilla 31/37: dataset6_markkostantine / healthy — 25 imgs
+2026-03-17 17:38:43,667 [INFO]   Grilla 32/37: dataset6_markkostantine / late_blight — 25 imgs
+2026-03-17 17:38:43,992 [INFO]   Grilla 33/37: dataset6_markkostantine / nematode — 25 imgs
+2026-03-17 17:38:44,332 [INFO]   Grilla 34/37: dataset6_markkostantine / pest — 25 imgs
+2026-03-17 17:38:45,204 [INFO]   Grilla 35/37: dataset7_nirmalsankalana / healthy — 25 imgs
+2026-03-17 17:38:46,395 [INFO]   Grilla 36/37: dataset7_nirmalsankalana / leafroll_virus — 25 imgs
+2026-03-17 17:38:47,554 [INFO]   Grilla 37/37: dataset7_nirmalsankalana / mosaic_virus — 25 imgs
+2026-03-17 17:38:47,555 [INFO] 
+[5] Guardando CSV de inventario...
+2026-03-17 17:38:47,774 [INFO] [OK] CSV guardado: auditoria_output\inventario_imagenes.csv (28561 filas)
+2026-03-17 17:38:47,775 [INFO] 
+[6] Guardando Excel de duplicados...
+2026-03-17 17:38:51,154 [INFO] [OK] Excel guardado: auditoria_output\duplicados_revision.xlsx
+2026-03-17 17:38:51,154 [INFO] 
+[7] Generando reporte HTML...
+2026-03-17 17:38:52,067 [INFO] [OK] Reporte HTML guardado: auditoria_output\reporte_auditoria.html
