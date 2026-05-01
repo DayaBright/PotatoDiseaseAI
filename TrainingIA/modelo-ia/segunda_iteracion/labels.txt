@@ -1,7 +1,0 @@
-early_blight
-healthy
-late_blight
-leafroll_virus
-mosaic_virus
-nematode
-pest
