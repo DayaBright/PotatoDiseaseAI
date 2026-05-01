@@ -68,53 +68,112 @@ fun DiseaseDetailScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(Dimensions.spacingMedium)
         ) {
-            // — Imagen de referencia (normal) —
+            // — Imágenes: referencia y Grad-CAM (lado a lado si existen ambas) —
             val normalResId = getDrawableResId(context, enfermedad.imagenReferencia)
-            if (normalResId != 0) {
+            val gradcamResId = getDrawableResId(context, enfermedad.imagenGradcam)
+
+            if (normalResId != 0 && gradcamResId != 0) {
                 item {
-                    Card(
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(Dimensions.cardElevation),
-                        shape = RoundedCornerShape(Dimensions.cornerRadiusMedium)
+                        horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingMedium)
                     ) {
-                        Image(
-                            painter = painterResource(id = normalResId),
-                            contentDescription = "Imagen de referencia: ${enfermedad.nombre}",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(Dimensions.imageHeightLarge)
-                                .clip(RoundedCornerShape(Dimensions.cornerRadiusMedium)),
-                            contentScale = ContentScale.Crop
-                        )
+                        // Imagen de referencia
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Imagen de referencia",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = Dimensions.spacingExtraSmall)
+                            )
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                elevation = CardDefaults.cardElevation(Dimensions.cardElevation),
+                                shape = RoundedCornerShape(Dimensions.cornerRadiusMedium)
+                            ) {
+                                Image(
+                                    painter = painterResource(id = normalResId),
+                                    contentDescription = "Imagen de referencia: ${enfermedad.nombre}",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(Dimensions.imageHeightLarge)
+                                        .clip(RoundedCornerShape(Dimensions.cornerRadiusMedium)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
+
+                        // Imagen Grad-CAM
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Visualización Grad-CAM",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = Dimensions.spacingExtraSmall)
+                            )
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                elevation = CardDefaults.cardElevation(Dimensions.cardElevation),
+                                shape = RoundedCornerShape(Dimensions.cornerRadiusMedium)
+                            ) {
+                                Image(
+                                    painter = painterResource(id = gradcamResId),
+                                    contentDescription = "Grad-CAM: ${enfermedad.nombre}",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(Dimensions.imageHeightLarge)
+                                        .clip(RoundedCornerShape(Dimensions.cornerRadiusMedium)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
                     }
                 }
-            }
-
-            // — Imagen Grad-CAM —
-            val gradcamResId = getDrawableResId(context, enfermedad.imagenGradcam)
-            if (gradcamResId != 0) {
-                item {
-                    Column {
-                        Text(
-                            text = "Visualización Grad-CAM",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = Dimensions.spacingExtraSmall)
-                        )
+            } else {
+                if (normalResId != 0) {
+                    item {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             elevation = CardDefaults.cardElevation(Dimensions.cardElevation),
                             shape = RoundedCornerShape(Dimensions.cornerRadiusMedium)
                         ) {
                             Image(
-                                painter = painterResource(id = gradcamResId),
-                                contentDescription = "Grad-CAM: ${enfermedad.nombre}",
+                                painter = painterResource(id = normalResId),
+                                contentDescription = "Imagen de referencia: ${enfermedad.nombre}",
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(Dimensions.imageHeightLarge)
                                     .clip(RoundedCornerShape(Dimensions.cornerRadiusMedium)),
                                 contentScale = ContentScale.Crop
                             )
+                        }
+                    }
+                }
+
+                if (gradcamResId != 0) {
+                    item {
+                        Column {
+                            Text(
+                                text = "Visualización Grad-CAM",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = Dimensions.spacingExtraSmall)
+                            )
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                elevation = CardDefaults.cardElevation(Dimensions.cardElevation),
+                                shape = RoundedCornerShape(Dimensions.cornerRadiusMedium)
+                            ) {
+                                Image(
+                                    painter = painterResource(id = gradcamResId),
+                                    contentDescription = "Grad-CAM: ${enfermedad.nombre}",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(Dimensions.imageHeightLarge)
+                                        .clip(RoundedCornerShape(Dimensions.cornerRadiusMedium)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
                         }
                     }
                 }

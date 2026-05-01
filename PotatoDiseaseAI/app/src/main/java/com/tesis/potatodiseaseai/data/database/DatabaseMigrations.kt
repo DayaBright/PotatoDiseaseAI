@@ -11,10 +11,10 @@ object DatabaseMigrations {
      * y crea el nuevo esquema relacional: enfermedades + analisis.
      */
     val MIGRATION_1_2 = object : Migration(1, 2) {
-        override fun migrate(database: SupportSQLiteDatabase) {
-            database.execSQL("DROP TABLE IF EXISTS `detections`")
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("DROP TABLE IF EXISTS `detections`")
 
-            database.execSQL(
+            db.execSQL(
                 """CREATE TABLE IF NOT EXISTS `enfermedades` (
                     `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                     `labelCnn` TEXT NOT NULL,
@@ -30,7 +30,7 @@ object DatabaseMigrations {
                 )"""
             )
 
-            database.execSQL(
+            db.execSQL(
                 """CREATE TABLE IF NOT EXISTS `analisis` (
                     `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                     `enfermedadId` INTEGER NOT NULL,
@@ -43,11 +43,11 @@ object DatabaseMigrations {
                 )"""
             )
 
-            database.execSQL(
+            db.execSQL(
                 "CREATE INDEX IF NOT EXISTS `index_analisis_enfermedadId` ON `analisis` (`enfermedadId`)"
             )
 
-            insertSeedData(database)
+            insertSeedData(db)
         }
     }
 
@@ -57,7 +57,7 @@ object DatabaseMigrations {
      * de los drawables reales que fueron agregados al proyecto.
      */
     val MIGRATION_2_3 = object : Migration(2, 3) {
-        override fun migrate(database: SupportSQLiteDatabase) {
+        override fun migrate(db: SupportSQLiteDatabase) {
             val imageMap = mapOf(
                 "late blight"    to Pair("lateblight_normal", "lateblight_gradcam"),
                 "early blight"   to Pair("earlyblight_normal", "earlyblight_gradcam"),
@@ -69,7 +69,7 @@ object DatabaseMigrations {
                 "healthy"        to Pair("healthy_normal", "")
             )
             for ((label, images) in imageMap) {
-                database.execSQL(
+                db.execSQL(
                     "UPDATE `enfermedades` SET imagenReferencia = ?, imagenGradcam = ? WHERE labelCnn = ?",
                     arrayOf(images.first, images.second, label)
                 )
