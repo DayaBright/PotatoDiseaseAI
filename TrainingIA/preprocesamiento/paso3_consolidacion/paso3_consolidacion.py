@@ -15,8 +15,6 @@ Reglas aplicadas:
 PREREQUISITO: Haber ejecutado paso2_auditoria_completa.py y tener
               auditoria_output/inventario_imagenes.csv generado.
 
-Dependencias:
-    pip install Pillow openpyxl
 """
 
 import csv
