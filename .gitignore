@@ -14,3 +14,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+# Android Studio / IntelliJ files
+.idea/
+*.iml
+.gradle/
+build/
+capture/
+/PotatoDiseaseAI/.idea
