@@ -1,0 +1,32 @@
+2026-03-18 20:18:49,274 [INFO] ============================================================
+2026-03-18 20:18:49,275 [INFO] PASO 3 — Consolidación del Dataset Unificado
+2026-03-18 20:18:49,275 [INFO] ============================================================
+2026-03-18 20:18:49,276 [INFO] 
+[A] Cargando inventario y aplicando reclasificación...
+2026-03-18 20:18:49,512 [INFO] Registros cargados  : 24157
+2026-03-18 20:18:49,522 [INFO] Excluidos (DS1/DS2) : 4404
+2026-03-18 20:18:49,522 [INFO] Reclasificados      : 3744
+2026-03-18 20:18:49,523 [INFO] 
+[B] Resolviendo duplicados...
+2026-03-18 20:18:49,594 [INFO] 
+[Duplicados eliminados]
+2026-03-18 20:18:49,595 [INFO]   Entre datasets  : 9032
+2026-03-18 20:18:49,595 [INFO]   Entre clases    : 0
+2026-03-18 20:18:49,596 [INFO]   Intra-clase     : 52
+2026-03-18 20:18:49,596 [INFO]   Total eliminados: 9084
+2026-03-18 20:18:49,596 [INFO]   Imágenes únicas : 15073
+2026-03-18 20:18:49,598 [INFO] 
+[C] Construyendo dataset consolidado...
+2026-03-18 20:18:49,607 [INFO] 
+Copiando imágenes a: C:\Users\jaevi\Downloads\Datasets\dataset curado\dataset_consolidado
+2026-03-18 20:19:47,856 [INFO] 
+[Copia completada]
+2026-03-18 20:19:47,856 [INFO]   Copiadas : 14776
+2026-03-18 20:19:47,856 [INFO]   Errores  : 0
+2026-03-18 20:19:47,856 [INFO]   Omitidas : 297
+2026-03-18 20:19:47,857 [INFO] 
+[D] Generando reporte...
+2026-03-18 20:19:47,858 [INFO] 
+[OK] Reporte guardado: C:\Users\jaevi\Downloads\Datasets\dataset curado\auditoria_output\reporte_consolidacion.txt
+2026-03-18 20:19:47,860 [INFO] 
+Dataset consolidado en: C:\Users\jaevi\Downloads\Datasets\dataset curado\dataset_consolidado
