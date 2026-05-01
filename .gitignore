@@ -21,3 +21,10 @@ local.properties
 build/
 capture/
 /PotatoDiseaseAI/.idea
+
+# Ignorar la carpeta de configuración de Android Studio dentro del subdirectorio
+PotatoDiseaseAI/.idea/
+
+# También es recomendable ignorar los archivos de compilación y caché
+PotatoDiseaseAI/build/
+PotatoDiseaseAI/.gradle/
