@@ -1,5 +1,6 @@
 package com.tesis.potatodiseaseai.ui.screens.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -14,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tesis.potatodiseaseai.R
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun DiagnosisCard(
     diseaseName: String,

@@ -97,6 +97,18 @@ dependencies {
 
     //manejo de la rotacion
     implementation("androidx.exifinterface:exifinterface:1.3.7")
+
+    // Unit Tests (JVM local — src/test/)
+    testImplementation("junit:junit:4.13.2")
+
+    // Instrumented Tests (src/androidTest/)
+    androidTestImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.room:room-testing:2.6.1")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    androidTestImplementation("androidx.arch.core:core-testing:2.2.0")
 }
 
 kotlin {
