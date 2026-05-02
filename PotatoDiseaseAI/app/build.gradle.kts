@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
-
 }
 
 android {
@@ -98,9 +97,7 @@ dependencies {
 
     //manejo de la rotacion
     implementation("androidx.exifinterface:exifinterface:1.3.7")
-
 }
-
 
 kotlin {
     jvmToolchain(17)

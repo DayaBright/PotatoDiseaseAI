@@ -27,6 +27,9 @@
     <string name="history_delete_message">¿Estás seguro de que deseas eliminar este análisis de %1$s?</string>
     <string name="history_delete_confirm">Eliminar</string>
     <string name="history_delete_cancel">Cancelar</string>
+    <string name="history_delete_all_title">Eliminar todo el historial</string>
+    <string name="history_delete_all_message">¿Estás seguro de que deseas eliminar todos los análisis? Esta acción no se puede deshacer.</string>
+    <string name="cd_delete_all">Eliminar todo el historial</string>
     
     <!-- Result Screen -->
     <string name="result_title">Resultado del Análisis</string>

@@ -55,6 +55,25 @@ class AnalisisRepository(private val context: Context) {
     suspend fun deleteAnalisisById(id: Long, imageUri: String): Boolean =
         deleteInternal(id, imageUri)
 
+    /**
+     * Elimina todos los análisis: primero borra las imágenes del almacenamiento
+     * y luego limpia la tabla completa.
+     */
+    suspend fun deleteAllAnalisis(): Boolean {
+        return try {
+            val allAnalisis = analisisDao.getAllAnalisisList()
+            allAnalisis.forEach { item ->
+                FileUtils.deleteImage(Uri.parse(item.analisis.imagenCapturada))
+            }
+            analisisDao.deleteAll()
+            Log.d(TAG, "✓ Todos los análisis eliminados (${allAnalisis.size} registros)")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "✗ Error eliminando todos los análisis: ${e.message}", e)
+            false
+        }
+    }
+
     private suspend fun deleteInternal(id: Long, imageUri: String): Boolean {
         return try {
             analisisDao.deleteById(id)

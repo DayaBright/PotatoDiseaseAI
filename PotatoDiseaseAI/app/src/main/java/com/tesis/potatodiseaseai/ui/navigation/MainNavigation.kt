@@ -120,6 +120,10 @@ fun MainNavigation() {
                         val route = NavigationHelper.buildDiseaseDetailRoute(enfermedadId)
                         navController.navigate(route)
                     }
+                    , onRepeatTutorial = {
+                        // Navegar al onboarding para repetir el tutorial
+                        navController.navigate(NavigationHelper.Routes.ONBOARDING)
+                    }
                 )
             }
             
