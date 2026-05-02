@@ -134,24 +134,41 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                     throw Exception(result.error?.message ?: "Clasificación fallida")
                 }
 
-                // ── PASO 5: Guardar imagen recortada (UNA sola vez, directo) ──
-                val directory = File(ctx.filesDir, "detections")
-                if (!directory.exists()) directory.mkdirs()
+                val isLowConfidence = result.confidence < 0.70f
 
-                val filename = "IMG_${System.currentTimeMillis()}.jpg"
-                val file = File(directory, filename)
-                FileOutputStream(file).use { out ->
-                    croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                val savedUri: Uri
+                val detectionId: Long?
+
+                if (isLowConfidence) {
+                    // ── Confianza baja: guardar imagen temporal solo para mostrar en ResultScreen ──
+                    val tempDir = File(ctx.cacheDir, "temp_detections")
+                    if (!tempDir.exists()) tempDir.mkdirs()
+                    val tempFile = File(tempDir, "TEMP_${System.currentTimeMillis()}.jpg")
+                    FileOutputStream(tempFile).use { out ->
+                        croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
+                    }
+                    savedUri = Uri.fromFile(tempFile)
+                    detectionId = null
+                    AppLogger.debug(TAG, "⚠ Confianza baja (${result.confidence}) — NO guardado en historial")
+                } else {
+                    // ── PASO 5: Guardar imagen recortada (UNA sola vez, directo) ──
+                    val directory = File(ctx.filesDir, "detections")
+                    if (!directory.exists()) directory.mkdirs()
+                    val filename = "IMG_${System.currentTimeMillis()}.jpg"
+                    val file = File(directory, filename)
+                    FileOutputStream(file).use { out ->
+                        croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                    }
+                    savedUri = Uri.fromFile(file)
+                    AppLogger.debug(TAG, "✓ Imagen guardada: ${file.absolutePath}")
+
+                    // ── PASO 6: Guardar en Room ──
+                    detectionId = repository.insertAnalisis(
+                        labelCnn = result.label,
+                        imagenUri = savedUri.toString(),
+                        precision = result.confidence
+                    )
                 }
-                val savedUri = Uri.fromFile(file)
-                AppLogger.debug(TAG, "✓ Imagen guardada: ${file.absolutePath}")
-
-                // ── PASO 6: Guardar en Room ──
-                val detectionId = repository.insertAnalisis(
-                    labelCnn = result.label,
-                    imagenUri = savedUri.toString(),
-                    precision = result.confidence
-                )
 
                 // ── PASO 7: Actualizar UI ──
                 _uiState.value = _uiState.value.copy(
