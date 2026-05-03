@@ -38,6 +38,9 @@
     <string name="result_gradcam_title">Mapa de Atención (Grad-CAM)</string>
     <string name="result_gradcam_placeholder">Próximamente: Visualización Grad-CAM</string>
     <string name="result_recommendations_title">Recomendaciones</string>
+    <string name="result_prevention_title">Prevención</string>
+    <string name="result_chemical_control_title">Control Químico</string>
+    <string name="result_biological_control_title">Control Biológico</string>
     <string name="result_low_confidence_title">Confianza baja</string>
     <string name="result_low_confidence_description">La precisión del análisis es menor al 70%. Para obtener un diagnóstico más confiable, intenta tomar una nueva foto siguiendo estos consejos:</string>
     <string name="result_low_confidence_tips_title">Consejos para una mejor foto</string>

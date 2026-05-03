@@ -220,8 +220,11 @@ private fun DiseaseCard(
                 )
                 Spacer(modifier = Modifier.height(Dimensions.spacingExtraSmall))
                 Text(
-                    text = enfermedad.agenteCausal.take(60) +
-                            if (enfermedad.agenteCausal.length > 60) "…" else "",
+                    text = if (enfermedad.tipoAgente.isNotBlank() && enfermedad.tipoAgente != "N/A")
+                               "${enfermedad.tipoAgente} — ${enfermedad.agenteCausal}".take(70) +
+                               if ("${enfermedad.tipoAgente} — ${enfermedad.agenteCausal}".length > 70) "…" else ""
+                           else enfermedad.agenteCausal.take(60) +
+                               if (enfermedad.agenteCausal.length > 60) "…" else "",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

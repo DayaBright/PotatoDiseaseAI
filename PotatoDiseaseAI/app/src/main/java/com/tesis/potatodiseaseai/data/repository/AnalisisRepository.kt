@@ -32,8 +32,7 @@ class AnalisisRepository(private val context: Context) {
     suspend fun insertAnalisis(
         labelCnn: String,
         imagenUri: String,
-        precision: Float,
-        imagenGradcamReal: String? = null
+        precision: Float
     ): Long {
         val enfermedad = enfermedadDao.getByLabel(labelCnn)
         val enfermedadId = enfermedad?.id ?: run {
@@ -43,7 +42,6 @@ class AnalisisRepository(private val context: Context) {
         val analisis = AnalisisEntity(
             enfermedadId = enfermedadId,
             imagenCapturada = imagenUri,
-            imagenGradcamReal = imagenGradcamReal,
             precision = precision
         )
         return analisisDao.insert(analisis)

@@ -8,9 +8,8 @@ import androidx.room.PrimaryKey
 /**
  * Tabla ANALISIS — Historial de clasificaciones del usuario.
  *
- * imagenGradcamReal: URI del Grad-CAM generado en tiempo real por el modelo
- * para ese análisis específico. Diferente al imagenGradcam de EnfermedadEntity,
- * que es la imagen educativa/representativa de la patología.
+ * Cada registro almacena la imagen capturada, la enfermedad detectada
+ * (por FK a enfermedades) y la precisión del modelo.
  */
 @Entity(
     tableName = "analisis",
@@ -29,8 +28,6 @@ data class AnalisisEntity(
     val id: Long = 0,
     val enfermedadId: Long,
     val imagenCapturada: String,
-    /** URI del Grad-CAM generado en tiempo real (null si no está disponible) */
-    val imagenGradcamReal: String? = null,
     val precision: Float,
     val fechaHora: Long = System.currentTimeMillis()
 )

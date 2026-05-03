@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -27,8 +28,8 @@ import com.tesis.potatodiseaseai.ui.theme.Dimensions
 
 /**
  * Pantalla de detalle de una enfermedad.
- * Muestra información completa: imagen, agente causal, impacto,
- * manifestaciones, signos, recomendaciones y fuentes.
+ * Muestra información completa: imagen, agente causal, tipo de agente,
+ * patrón visual, impacto, prevención, control químico, control biológico y fuentes.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -179,13 +180,29 @@ fun DiseaseDetailScreen(
                 }
             }
 
-            // — Agente Causal —
+            // — Agente Causal y Tipo —
             if (enfermedad.agenteCausal.isNotBlank() && enfermedad.agenteCausal != "N/A — Planta sin patología detectada") {
                 item {
                     DetailInfoCard(
                         icon = Icons.Outlined.Science,
                         title = "Agente Causal",
-                        content = enfermedad.agenteCausal
+                        content = buildString {
+                            append(enfermedad.agenteCausal)
+                            if (enfermedad.tipoAgente.isNotBlank() && enfermedad.tipoAgente != "N/A") {
+                                append("\nTipo: ${enfermedad.tipoAgente}")
+                            }
+                        }
+                    )
+                }
+            }
+
+            // — Patrón Visual —
+            if (enfermedad.patronVisual.isNotBlank()) {
+                item {
+                    DetailInfoCard(
+                        icon = Icons.Outlined.Visibility,
+                        title = "Patrón Visual en la Hoja",
+                        content = enfermedad.patronVisual
                     )
                 }
             }
@@ -201,90 +218,45 @@ fun DiseaseDetailScreen(
                 }
             }
 
-            // — Manifestaciones Visuales —
-            item {
-                DetailInfoCard(
-                    icon = Icons.Outlined.Visibility,
-                    title = "Manifestaciones Visuales",
-                    content = enfermedad.manifestacionesVisuales
-                )
-            }
-
-            // — Signos Clave —
-            if (enfermedad.signosClave.isNotBlank()) {
+            // — Prevención —
+            val prevencion = enfermedad.getPrevencionList()
+            if (prevencion.isNotEmpty()) {
                 item {
-                    DetailInfoCard(
-                        icon = Icons.Outlined.Search,
-                        title = "Signos Clave",
-                        content = enfermedad.signosClave
+                    DetailListCard(
+                        icon = Icons.Outlined.Shield,
+                        title = "Prevención",
+                        items = prevencion,
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        accentColor = MaterialTheme.colorScheme.primary
                     )
                 }
             }
 
-            // — Recomendaciones de Manejo —
-            val recomendaciones = enfermedad.getRecomendacionesList()
-            if (recomendaciones.isNotEmpty()) {
+            // — Control Químico —
+            val controlQuimico = enfermedad.getControlQuimicoList()
+            if (controlQuimico.isNotEmpty() && !controlQuimico.any { it.startsWith("No requiere") }) {
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(Dimensions.cardElevation),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(Dimensions.spacingMedium)
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingSmall),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Agriculture,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.tertiary,
-                                    modifier = Modifier.size(Dimensions.iconSizeSmall)
-                                )
-                                Text(
-                                    text = "Manejo y Prevención",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.tertiary
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(Dimensions.spacingSmall))
-                            recomendaciones.forEachIndexed { index, recomendacion ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = Dimensions.spacingExtraSmall),
-                                    horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingSmall)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                            .background(
-                                                MaterialTheme.colorScheme.tertiary,
-                                                RoundedCornerShape(12.dp)
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = "${index + 1}",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onTertiary,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                    Text(
-                                        text = recomendacion,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    DetailListCard(
+                        icon = Icons.Outlined.Science,
+                        title = "Control Químico",
+                        items = controlQuimico,
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                        accentColor = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
+
+            // — Control Biológico —
+            val controlBiologico = enfermedad.getControlBiologicoList()
+            if (controlBiologico.isNotEmpty() && !controlBiologico.any { it.startsWith("No requiere") }) {
+                item {
+                    DetailListCard(
+                        icon = Icons.Outlined.Eco,
+                        title = "Control Biológico",
+                        items = controlBiologico,
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f),
+                        accentColor = MaterialTheme.colorScheme.tertiary
+                    )
                 }
             }
 
@@ -330,7 +302,7 @@ fun DiseaseDetailScreen(
 }
 
 /**
- * Card reutilizable para secciones de información del detalle.
+ * Card reutilizable para secciones de información del detalle (texto simple).
  */
 @Composable
 private fun DetailInfoCard(
@@ -367,6 +339,77 @@ private fun DetailInfoCard(
                 text = content,
                 style = MaterialTheme.typography.bodyMedium
             )
+        }
+    }
+}
+
+/**
+ * Card reutilizable para secciones con listas numeradas (prevención, controles).
+ */
+@Composable
+private fun DetailListCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    items: List<String>,
+    containerColor: Color,
+    accentColor: Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(Dimensions.cardElevation),
+        colors = CardDefaults.cardColors(containerColor = containerColor)
+    ) {
+        Column(
+            modifier = Modifier.padding(Dimensions.spacingMedium)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingSmall),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = accentColor,
+                    modifier = Modifier.size(Dimensions.iconSizeSmall)
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = accentColor
+                )
+            }
+            Spacer(modifier = Modifier.height(Dimensions.spacingSmall))
+            items.forEachIndexed { index, item ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimensions.spacingExtraSmall),
+                    horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingSmall)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .background(
+                                accentColor,
+                                RoundedCornerShape(12.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${index + 1}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.surface,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Text(
+                        text = item,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
         }
     }
 }

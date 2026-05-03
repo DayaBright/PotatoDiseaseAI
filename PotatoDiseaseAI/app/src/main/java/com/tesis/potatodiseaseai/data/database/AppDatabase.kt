@@ -33,7 +33,8 @@ abstract class AppDatabase : RoomDatabase() {
                     // Migración explícita v1→v2 (sin perder datos en futuras versiones)
                     .addMigrations(
                         DatabaseMigrations.MIGRATION_1_2,
-                        DatabaseMigrations.MIGRATION_2_3
+                        DatabaseMigrations.MIGRATION_2_3,
+                        DatabaseMigrations.MIGRATION_3_4
                     )
                     // Insertar datos semilla en instalaciones totalmente nuevas
                     .addCallback(object : RoomDatabase.Callback() {
