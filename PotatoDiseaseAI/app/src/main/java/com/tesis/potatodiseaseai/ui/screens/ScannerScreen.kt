@@ -64,7 +64,7 @@ fun ScannerScreen(innerPadding: PaddingValues) {
 
     val galleryLauncher =
             rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-                uri?.let { vm.onCaptureSuccess(it) }
+                uri?.let { vm.onGalleryImageSelected(it) }
             }
 
     Box(modifier = Modifier.fillMaxSize()) {

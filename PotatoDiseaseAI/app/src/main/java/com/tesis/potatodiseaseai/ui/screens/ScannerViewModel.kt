@@ -3,7 +3,10 @@ package com.tesis.potatodiseaseai.ui.screens
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Matrix
+import android.graphics.Paint
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.AndroidViewModel
@@ -59,6 +62,15 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
     fun onCaptureSuccess(uri: Uri?) {
         _uiState.value = _uiState.value.copy(isCapturing = false, lastPhotoUri = uri)
         uri?.let { classifyAndSave(it) }
+    }
+
+    /**
+     * Punto de entrada para imágenes seleccionadas desde la galería.
+     * Usa letterbox en lugar de recorte para conservar toda la información.
+     */
+    fun onGalleryImageSelected(uri: Uri) {
+        _uiState.value = _uiState.value.copy(isCapturing = false, lastPhotoUri = uri)
+        classifyAndSaveFromGallery(uri)
     }
 
     fun onCaptureError(message: String) {
@@ -229,6 +241,139 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
             AppLogger.error(TAG, "Error leyendo EXIF: ${e.message}")
             bitmap
         }
+    }
+
+    /**
+     * Pipeline para imágenes de galería: cargar → rotar → letterbox 224×224 → clasificar + guardar.
+     * No recorta: redimensiona la imagen completa dentro de 224×224 con padding negro.
+     */
+    private fun classifyAndSaveFromGallery(sourceUri: Uri) {
+        val localClassifier = classifier
+
+        if (!localClassifier.isReady()) {
+            _uiState.value = _uiState.value.copy(
+                error = ErrorHandler.getUserMessage(
+                    com.tesis.potatodiseaseai.utils.AppError.ClassificationError()
+                )
+            )
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            var rawBitmap: Bitmap? = null
+            var rotatedBitmap: Bitmap? = null
+            var letterboxedBitmap: Bitmap? = null
+            try {
+                _uiState.value = _uiState.value.copy(isClassifying = true, error = null)
+                val ctx = getApplication<Application>().applicationContext
+
+                // ── PASO 1: Decodificar bitmap ──
+                rawBitmap = ctx.contentResolver.openInputStream(sourceUri)?.use { stream ->
+                    BitmapFactory.decodeStream(stream)
+                } ?: throw java.io.IOException("No se pudo decodificar la imagen")
+
+                // ── PASO 2: Corregir rotación EXIF ──
+                rotatedBitmap = fixRotationInMemory(ctx, sourceUri, rawBitmap)
+
+                // ── PASO 3: Letterbox a 224×224 (sin recorte, sin distorsión) ──
+                letterboxedBitmap = letterboxBitmap(rotatedBitmap, 224)
+                AppLogger.debug(TAG, "Imagen letterbox: ${letterboxedBitmap.width}x${letterboxedBitmap.height} (original: ${rotatedBitmap.width}x${rotatedBitmap.height})")
+
+                // ── PASO 4: Clasificar ──
+                val result = localClassifier.classify(letterboxedBitmap)
+
+                if (result.error != null || result.label.isBlank()) {
+                    throw Exception(result.error?.message ?: "Clasificación fallida")
+                }
+
+                val isLowConfidence = result.confidence < 0.70f
+
+                val savedUri: Uri
+                val detectionId: Long?
+
+                if (isLowConfidence) {
+                    val tempDir = File(ctx.cacheDir, "temp_detections")
+                    if (!tempDir.exists()) tempDir.mkdirs()
+                    val tempFile = File(tempDir, "TEMP_${System.currentTimeMillis()}.jpg")
+                    FileOutputStream(tempFile).use { out ->
+                        letterboxedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
+                    }
+                    savedUri = Uri.fromFile(tempFile)
+                    detectionId = null
+                    AppLogger.debug(TAG, "⚠ Confianza baja (${result.confidence}) — NO guardado en historial")
+                } else {
+                    val directory = File(ctx.filesDir, "detections")
+                    if (!directory.exists()) directory.mkdirs()
+                    val filename = "IMG_${System.currentTimeMillis()}.jpg"
+                    val file = File(directory, filename)
+                    FileOutputStream(file).use { out ->
+                        letterboxedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                    }
+                    savedUri = Uri.fromFile(file)
+                    AppLogger.debug(TAG, "✓ Imagen guardada: ${file.absolutePath}")
+
+                    detectionId = repository.insertAnalisis(
+                        labelCnn = result.label,
+                        imagenUri = savedUri.toString(),
+                        precision = result.confidence
+                    )
+                }
+
+                _uiState.value = _uiState.value.copy(
+                    lastPhotoUri = savedUri,
+                    classification = result.label,
+                    confidence = result.confidence,
+                    isClassifying = false,
+                    shouldNavigateToResult = true,
+                    savedDetectionId = detectionId,
+                    flashEnabled = false
+                )
+            } catch (e: Exception) {
+                val appError = ErrorHandler.handleException(e, "Clasificación y guardado (galería)")
+                _uiState.value = _uiState.value.copy(
+                    error = ErrorHandler.getUserMessage(appError),
+                    isClassifying = false
+                )
+            } finally {
+                if (letterboxedBitmap != null && letterboxedBitmap !== rotatedBitmap) letterboxedBitmap.recycle()
+                if (rotatedBitmap != null && rotatedBitmap !== rawBitmap) rotatedBitmap.recycle()
+                rawBitmap?.recycle()
+            }
+        }
+    }
+
+    /**
+     * Redimensiona un bitmap para que quepa dentro de un cuadrado de [targetSize]×[targetSize]
+     * manteniendo la proporción original, y rellena los bordes vacíos con negro.
+     *
+     * Ejemplo: una imagen 640×480 se escala a 224×168 y se centra en un canvas 224×224
+     * con 28px de padding negro arriba y abajo.
+     */
+    private fun letterboxBitmap(source: Bitmap, targetSize: Int): Bitmap {
+        val srcW = source.width.toFloat()
+        val srcH = source.height.toFloat()
+
+        // Factor de escala para que el lado mayor quepa en targetSize
+        val scale = targetSize.toFloat() / maxOf(srcW, srcH)
+
+        val scaledW = (srcW * scale).toInt()
+        val scaledH = (srcH * scale).toInt()
+
+        // Crear bitmap negro de targetSize×targetSize
+        val output = Bitmap.createBitmap(targetSize, targetSize, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(output)
+        canvas.drawColor(Color.BLACK)
+
+        // Centrar la imagen escalada
+        val offsetX = (targetSize - scaledW) / 2f
+        val offsetY = (targetSize - scaledH) / 2f
+
+        val scaledBitmap = Bitmap.createScaledBitmap(source, scaledW, scaledH, true)
+        canvas.drawBitmap(scaledBitmap, offsetX, offsetY, Paint(Paint.FILTER_BITMAP_FLAG))
+
+        if (scaledBitmap !== source) scaledBitmap.recycle()
+
+        return output
     }
 
     fun onNavigatedToResult() {
