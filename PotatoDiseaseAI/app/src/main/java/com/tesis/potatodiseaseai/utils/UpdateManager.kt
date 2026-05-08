@@ -11,6 +11,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.tesis.potatodiseaseai.BuildConfig
 import kotlinx.coroutines.Dispatchers
@@ -21,16 +23,18 @@ import java.io.File
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import androidx.core.net.toUri
 
 class UpdateManager(private val context: Context) {
 
     // Cambia esto a tu usuario/repositorio real de GitHub
-    private val githubRepo = "usuario/PotatoDiseaseAI"
-    private val apiUrl = "https://api.github.com/repos/$githubRepo/releases/latest"
+    private val githubRepo = "Kevin17Vichi/PotatoDiseaseAI"
+    private val apiUrl = "https://api.github.com/repos/Kevin17Vichi/PotatoDiseaseAI/releases/latest"
 
     /**
      * Verifica si el dispositivo está conectado a Wi-Fi
      */
+    @RequiresApi(Build.VERSION_CODES.M)
     fun isConnectedToWifi(): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connectivityManager.activeNetwork ?: return false
@@ -89,7 +93,7 @@ class UpdateManager(private val context: Context) {
     fun downloadAndInstallUpdate(apkUrl: String, version: String) {
         Toast.makeText(context, "Iniciando descarga de $version...", Toast.LENGTH_SHORT).show()
 
-        val request = DownloadManager.Request(Uri.parse(apkUrl))
+        val request = DownloadManager.Request(apkUrl.toUri())
             .setTitle("Actualización de PotatoDiseaseAI")
             .setDescription("Descargando versión $version")
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
@@ -112,7 +116,12 @@ class UpdateManager(private val context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             context.registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED)
         } else {
-            context.registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+            ContextCompat.registerReceiver(
+                context,
+                onComplete,
+                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
         }
     }
 
