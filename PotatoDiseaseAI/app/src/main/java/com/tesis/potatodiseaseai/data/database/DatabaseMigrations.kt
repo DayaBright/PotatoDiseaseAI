@@ -63,7 +63,6 @@ object DatabaseMigrations {
                 "early blight"   to Pair("earlyblight_normal", "earlyblight_gradcam"),
                 "leafroll virus" to Pair("leafroll_normal", "leafroll_gradcam"),
                 "mosaic virus"   to Pair("mosaic_normal", "mosaic_gradcam"),
-                "bacterial wilt" to Pair("", ""),
                 "nematode"       to Pair("nematode_normal", "nematode_gradacam"),
                 "pest"           to Pair("pest_normal", "pest_gradcam"),
                 "healthy"        to Pair("healthy_normal", "")
@@ -261,18 +260,6 @@ object DatabaseMigrations {
             "Aceites minerales para reducir la transmisión",
             "Reportes verificados — Tesis Vichicela 2026",
             "mosaic virus"
-        ),
-        // Marchitez Bacteriana
-        arrayOf(
-            "Ralstonia solanacearum",
-            "Bacteria",
-            "Amarillamiento y marchitez foliar uniforme sin manchas discretas. Hojas colgantes y flácidas.",
-            "Puede causar pérdida total en suelos contaminados. Sobrevive años en el suelo.",
-            "Rotación de cultivos con gramíneas por al menos 3 años|Eliminar y quemar plantas infectadas|Uso de semilla certificada",
-            "No tiene cura efectiva — manejo exclusivamente preventivo",
-            "No se dispone de agentes biológicos efectivos documentados",
-            "Reportes verificados — Tesis Vichicela 2026",
-            "bacterial wilt"
         )
     )
 
@@ -350,19 +337,6 @@ object DatabaseMigrations {
             "Reportes verificados — Tesis Vichicela 2026"
         ),
         arrayOf(
-            "bacterial wilt",
-            "Marchitez Bacteriana",
-            "Ralstonia solanacearum",
-            "Bacteria",
-            "Amarillamiento y marchitez foliar uniforme sin manchas discretas. Hojas colgantes y flácidas.",
-            "Puede causar pérdida total en suelos contaminados. Sobrevive años en el suelo.",
-            "Rotación de cultivos con gramíneas por al menos 3 años|Eliminar y quemar plantas infectadas|Uso de semilla certificada",
-            "No tiene cura efectiva — manejo exclusivamente preventivo",
-            "No se dispone de agentes biológicos efectivos documentados",
-            "", "",
-            "Reportes verificados — Tesis Vichicela 2026"
-        ),
-        arrayOf(
             "nematode",
             "Nematodo del Quiste de la Papa (NQP)",
             "Globodera pallida, G. rostochiensis",
@@ -427,10 +401,6 @@ object DatabaseMigrations {
             arrayOf("mosaic virus", "Mosaico Viral (PVY/PVX)", "Potato virus Y (PVY)",
                 "Pérdidas del 20% al 80%.", "Patrón mosaico.", "Superficie rugosa.",
                 "Desinfección de herramientas|Eliminar plantas enfermas|Controlar áfidos",
-                "", "", "INIAP Ecuador"),
-            arrayOf("bacterial wilt", "Marchitez Bacteriana", "Bacteria Ralstonia solanacearum",
-                "Pérdida total en suelos contaminados.", "Marchitez foliar uniforme.", "Marchitez diurna.",
-                "Manejo preventivo|Rotación de cultivos|Eliminar plantas infectadas",
                 "", "", "INIAP Ecuador"),
             arrayOf("nematode", "Nematodo del Quiste de la Papa (NQP)", "Globodera pallida",
                 "Reducción del 10% al 30%.", "Clorosis difusa.", "Plantas pequeñas en rodales.",
