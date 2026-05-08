@@ -38,6 +38,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     // Solución para conflictos de namespace de TensorFlow Lite

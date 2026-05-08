@@ -2,6 +2,7 @@ package com.tesis.potatodiseaseai.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,10 +26,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tesis.potatodiseaseai.BuildConfig
 import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.data.database.EnfermedadEntity
 import com.tesis.potatodiseaseai.ui.theme.Dimensions
+import com.tesis.potatodiseaseai.utils.UpdateManager
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -141,6 +146,11 @@ fun HelpScreen(
                             }
                         }
                     }
+                }
+
+                // ── Sección: Actualizaciones ──
+                item {
+                    UpdateCard()
                 }
             }
         }
@@ -306,4 +316,111 @@ private fun HelpSection(
 private fun getDrawableResId(context: Context, name: String): Int {
     if (name.isBlank()) return 0
     return context.resources.getIdentifier(name, "drawable", context.packageName)
+}
+
+@Composable
+private fun UpdateCard() {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var isChecking by remember { mutableStateOf(false) }
+    var updateAvailable by remember { mutableStateOf<Pair<String, String>?>(null) }
+    val updateManager = remember { UpdateManager(context) }
+    val currentVersion = BuildConfig.VERSION_NAME
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(Dimensions.cardElevation),
+        shape = RoundedCornerShape(Dimensions.cornerRadiusMedium),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.padding(Dimensions.spacingMedium)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingSmall),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.SystemUpdate,
+                        contentDescription = "Actualizaciones",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Column {
+                        Text(
+                            text = "Buscar actualizaciones",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "Versión actual: v$currentVersion",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                if (isChecking) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(Dimensions.iconSizeSmall),
+                        strokeWidth = 2.dp
+                    )
+                } else if (updateAvailable != null) {
+                    IconButton(
+                        onClick = {
+                            updateAvailable?.let { (version, url) ->
+                                updateManager.downloadAndInstallUpdate(url, version)
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Download,
+                            contentDescription = "Descargar actualización",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                } else {
+                    IconButton(
+                        onClick = {
+                            if (!updateManager.isConnectedToWifi()) {
+                                Toast.makeText(context, "No tienes conexión a Wi-Fi", Toast.LENGTH_SHORT).show()
+                                return@IconButton
+                            }
+                            isChecking = true
+                            coroutineScope.launch {
+                                val result = updateManager.checkForUpdates()
+                                isChecking = false
+                                if (result != null) {
+                                    updateAvailable = result
+                                    Toast.makeText(context, "Nueva versión disponible: ${result.first}", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "Ya tienes la última versión", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Search,
+                            contentDescription = "Buscar",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            if (updateAvailable != null) {
+                Spacer(modifier = Modifier.height(Dimensions.spacingSmall))
+                Text(
+                    text = "¡Hay una nueva actualización (v${updateAvailable?.first}) disponible! Toca el ícono de descarga para actualizar.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
 }
