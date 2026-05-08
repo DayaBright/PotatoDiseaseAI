@@ -72,6 +72,9 @@ fun ScannerScreen(innerPadding: PaddingValues) {
         CameraPreview(
                 context = context,
                 lifecycleOwner = lifecycleOwner,
+                onAnalyze = { imageProxy ->
+                    vm.analyzeFrame(imageProxy)
+                },
                 onReady = { imageCapture, camera ->
                     imageCaptureState.value = imageCapture
                     cameraState.value = camera
@@ -232,24 +235,92 @@ fun ScannerScreen(innerPadding: PaddingValues) {
             )
         }
 
-        // Texto guía debajo del cuadro
+        // Texto guía ARRIBA del cuadro
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val guideBottom = (maxHeight.value + maxWidth.value * guideFraction) / 2f
-            Text(
+            val side = maxHeight.value.coerceAtMost(maxWidth.value) * guideFraction
+            val guideTop = (maxHeight.value - side) / 2f
+            
+            Column(
+                modifier = Modifier
+                    .padding(top = (guideTop - 100).dp)
+                    .align(Alignment.TopCenter),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
                     text = stringResource(R.string.scanner_guide_text),
                     color = Color.White,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
-                    modifier =
-                            Modifier.padding(top = guideBottom.dp + 16.dp)
-                                    .background(
-                                            Color.Black.copy(alpha = 0.35f),
-                                            RoundedCornerShape(20.dp)
-                                    )
-                                    .padding(horizontal = 24.dp, vertical = 8.dp)
-                                    .align(Alignment.TopCenter)
-            )
+                    modifier = Modifier
+                        .background(
+                            Color.Black.copy(alpha = 0.35f),
+                            RoundedCornerShape(20.dp)
+                        )
+                        .padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+
+                Text(
+                    text = stringResource(R.string.scanner_guide_text_capture),
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .background(
+                            Color.Black.copy(alpha = 0.35f),
+                            RoundedCornerShape(20.dp)
+                        )
+                        .padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
+        }
+
+        // Clasificación en vivo DEBAJO del cuadro
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val side = maxHeight.value.coerceAtMost(maxWidth.value) * guideFraction
+            val guideTop = (maxHeight.value - side) / 2f
+            val guideBottom = guideTop + side
+            
+            Column(
+                modifier = Modifier
+                    .padding(top = (guideBottom + 16).dp)
+                    .align(Alignment.TopCenter),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Live Inference Display
+                if (uiState.liveClassification != null) {
+                    Text(
+                        text = uiState.liveClassification!!,
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .background(
+                                Color(0xFF4CAF50).copy(alpha = 0.8f),
+                                RoundedCornerShape(20.dp)
+                            )
+                            .padding(horizontal = 24.dp, vertical = 8.dp)
+                    )
+                } else if (uiState.isLiveLowConfidence) {
+                    Text(
+                        text = stringResource(R.string.scanner_focus_properly),
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .background(
+                                Color.Red.copy(alpha = 0.8f),
+                                RoundedCornerShape(20.dp)
+                            )
+                            .padding(horizontal = 24.dp, vertical = 8.dp)
+                    )
+                }
+            }
         }
 
         // Botón Flash

@@ -4,7 +4,9 @@ import android.content.Context
 
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.ResolutionSelector
@@ -20,6 +22,7 @@ import androidx.lifecycle.LifecycleOwner
 fun CameraPreview(
     context: Context,
     lifecycleOwner: LifecycleOwner,
+    onAnalyze: ((ImageProxy) -> Unit)? = null,
     onReady: (imageCapture: ImageCapture, camera: Camera) -> Unit
 ) {
     val previewView = remember { 
@@ -59,6 +62,18 @@ fun CameraPreview(
             .setResolutionSelector(resolutionSelector)
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .build()
+            
+        val imageAnalysis = ImageAnalysis.Builder()
+            .setTargetRotation(displayRotation)
+            .setResolutionSelector(resolutionSelector)
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+            
+        onAnalyze?.let { callback ->
+            imageAnalysis.setAnalyzer(androidx.core.content.ContextCompat.getMainExecutor(context)) { proxy ->
+                callback(proxy)
+            }
+        }
 
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
         provider.unbindAll()
@@ -67,7 +82,8 @@ fun CameraPreview(
             lifecycleOwner,
             cameraSelector,
             preview,
-            imageCapture
+            imageCapture,
+            imageAnalysis
         )
 
         onReady(imageCapture, camera)

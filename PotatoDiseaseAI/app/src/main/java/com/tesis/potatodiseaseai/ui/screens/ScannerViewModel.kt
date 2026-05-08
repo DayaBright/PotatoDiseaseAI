@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import androidx.camera.core.ImageProxy
 import java.io.File
 import java.io.FileOutputStream
 
@@ -32,7 +33,9 @@ data class ScannerUiState(
     val confidence: Float? = null,
     val isClassifying: Boolean = false,
     val shouldNavigateToResult: Boolean = false,
-    val savedDetectionId: Long? = null
+    val savedDetectionId: Long? = null,
+    val liveClassification: String? = null,
+    val isLiveLowConfidence: Boolean = false
 )
 
 class ScannerViewModel(application: Application) : AndroidViewModel(application) {
@@ -53,6 +56,70 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
 
     fun toggleFlash() {
         _uiState.value = _uiState.value.copy(flashEnabled = !_uiState.value.flashEnabled)
+    }
+
+    private var lastAnalysisTime = 0L
+
+    fun analyzeFrame(imageProxy: ImageProxy) {
+        val localClassifier = classifier
+        if (!localClassifier.isReady() || _uiState.value.isClassifying || _uiState.value.isCapturing) {
+            imageProxy.close()
+            return
+        }
+
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastAnalysisTime < 2000) {
+            imageProxy.close()
+            return
+        }
+        lastAnalysisTime = currentTime
+
+        viewModelScope.launch(Dispatchers.IO) {
+            var rawBitmap: Bitmap? = null
+            var rotatedBitmap: Bitmap? = null
+            var croppedBitmap: Bitmap? = null
+            try {
+                val ctx = getApplication<Application>().applicationContext
+                rawBitmap = imageProxy.toBitmap()
+
+                val matrix = Matrix().apply { postRotate(imageProxy.imageInfo.rotationDegrees.toFloat()) }
+                rotatedBitmap = Bitmap.createBitmap(rawBitmap, 0, 0, rawBitmap.width, rawBitmap.height, matrix, true)
+                
+                val guideFraction = 0.85f
+                val displayMetrics = ctx.resources.displayMetrics
+                val screenW = displayMetrics.widthPixels.toFloat()
+                val screenH = displayMetrics.heightPixels.toFloat()
+                val imgW = rotatedBitmap.width.toFloat()
+                val imgH = rotatedBitmap.height.toFloat()
+
+                val fillScale = maxOf(screenW / imgW, screenH / imgH)
+
+                val guideScreenPx = minOf(screenW, screenH) * guideFraction
+                val guideCamPx = (guideScreenPx / fillScale).toInt()
+                    .coerceAtMost(minOf(rotatedBitmap.width, rotatedBitmap.height))
+
+                val x = (rotatedBitmap.width - guideCamPx) / 2
+                val y = (rotatedBitmap.height - guideCamPx) / 2
+                croppedBitmap = Bitmap.createBitmap(rotatedBitmap, x, y, guideCamPx, guideCamPx)
+
+                val result = localClassifier.classify(croppedBitmap)
+                
+                if (result.error == null && result.label.isNotBlank()) {
+                    val isLowConfidence = result.confidence < 0.70f
+                    _uiState.value = _uiState.value.copy(
+                        liveClassification = if (isLowConfidence) null else result.label,
+                        isLiveLowConfidence = isLowConfidence
+                    )
+                }
+            } catch (e: Exception) {
+                AppLogger.error(TAG, "Error en live analysis: ${e.message}")
+            } finally {
+                if (croppedBitmap != null && croppedBitmap !== rotatedBitmap) croppedBitmap.recycle()
+                if (rotatedBitmap != null && rotatedBitmap !== rawBitmap) rotatedBitmap.recycle()
+                rawBitmap?.recycle()
+                imageProxy.close()
+            }
+        }
     }
 
     fun startCapture() {
