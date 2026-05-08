@@ -6,9 +6,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -16,11 +19,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tesis.potatodiseaseai.R
-import com.tesis.potatodiseaseai.data.model.DiseaseDatabase
+import com.tesis.potatodiseaseai.data.database.AppDatabase
+import com.tesis.potatodiseaseai.data.database.EnfermedadEntity
 import com.tesis.potatodiseaseai.data.repository.AnalisisRepository
 import com.tesis.potatodiseaseai.ui.screens.components.CachedImage
 import com.tesis.potatodiseaseai.ui.screens.components.DiagnosisCard
+import com.tesis.potatodiseaseai.utils.LabelNormalizer
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,10 +44,37 @@ fun ResultScreen(
     val repository = remember { AnalisisRepository(context) }
     
     var showDeleteDialog by remember { mutableStateOf(false) }
+
+    // ── Cargar datos de la enfermedad desde Room ──
+    val db = remember { AppDatabase.getDatabase(context) }
+    var enfermedad by remember { mutableStateOf<EnfermedadEntity?>(null) }
+
+    LaunchedEffect(disease) {
+        enfermedad = withContext(Dispatchers.IO) {
+            val normalizedLabel = LabelNormalizer.normalize(disease)
+            db.enfermedadDao().getByLabel(normalizedLabel)
+        }
+    }
     
-    val diseaseName = DiseaseDatabase.getDiseaseName(disease)
-    val recommendations = DiseaseDatabase.getRecommendations(disease)
+    val diseaseName = enfermedad?.nombre ?: disease
     val isHealthy = disease.lowercase().contains("healthy")
+    val isLowConfidence = confidence < 0.70f
+    val isSaved = detectionId != null && detectionId != 0L
+
+    // Listas de recomendaciones desde la BD
+    val prevencion = enfermedad?.getPrevencionList() ?: emptyList()
+    val controlQuimico = enfermedad?.getControlQuimicoList() ?: emptyList()
+    val controlBiologico = enfermedad?.getControlBiologicoList() ?: emptyList()
+
+    // Tips para fotos de baja confianza
+    val photoTips = listOf(
+        R.string.result_tip_clean_camera,
+        R.string.result_tip_center_leaf,
+        R.string.result_tip_ensure_leaf,
+        R.string.result_tip_good_lighting,
+        R.string.result_tip_avoid_blur,
+        R.string.result_tip_single_leaf
+    )
     
     if (showDeleteDialog) {
         AlertDialog(
@@ -119,50 +153,172 @@ fun ResultScreen(
                 )
             }
 
-            // Recomendaciones
-            item {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = stringResource(R.string.result_recommendations_title),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
+            if (isLowConfidence) {
+                //  Confianza baja: mostrar consejos para mejor foto
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = stringResource(R.string.result_low_confidence_tips_title),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.result_low_confidence_description),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        }
+                    }
+                }
+
+                items(photoTips) { tipResId ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CameraAlt,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = stringResource(tipResId),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            } else {
+                // ── Confianza suficiente: mostrar recomendaciones desde BD ──
+
+                // — Prevención —
+                if (prevencion.isNotEmpty()) {
+                    item {
+                        RecommendationSection(
+                            icon = Icons.Outlined.Shield,
+                            title = stringResource(R.string.result_prevention_title),
+                            items = prevencion,
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            accentColor = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                // — Control Químico —
+                if (controlQuimico.isNotEmpty() && !controlQuimico.any { it.startsWith("No requiere") }) {
+                    item {
+                        RecommendationSection(
+                            icon = Icons.Outlined.Science,
+                            title = stringResource(R.string.result_chemical_control_title),
+                            items = controlQuimico,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            accentColor = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+
+                // — Control Biológico —
+                if (controlBiologico.isNotEmpty() && !controlBiologico.any { it.startsWith("No requiere") }) {
+                    item {
+                        RecommendationSection(
+                            icon = Icons.Outlined.Eco,
+                            title = stringResource(R.string.result_biological_control_title),
+                            items = controlBiologico,
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            accentColor = MaterialTheme.colorScheme.tertiary
+                        )
                     }
                 }
             }
 
-            items(recommendations) { recommendation ->
+            // Botón para eliminar (solo si se guardó en historial, ID > 0)
+            if (isSaved) {
+                item {
+                    Button(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.result_delete_button))
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Sección reutilizable para mostrar una lista de recomendaciones con ícono y título.
+ */
+@Composable
+private fun RecommendationSection(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    items: List<String>,
+    containerColor: androidx.compose.ui.graphics.Color,
+    contentColor: androidx.compose.ui.graphics.Color,
+    accentColor: androidx.compose.ui.graphics.Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = containerColor.copy(alpha = 0.6f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = accentColor,
+                    modifier = Modifier.size(22.dp)
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = accentColor
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            items.forEach { item ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .padding(vertical = 3.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         text = "•",
-                        modifier = Modifier.padding(end = 8.dp),
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = contentColor
                     )
                     Text(
-                        text = recommendation,
-                        style = MaterialTheme.typography.bodyLarge
+                        text = item,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = contentColor
                     )
-                }
-            }
-
-            // Botón para eliminar
-            item {
-                Button(
-                    onClick = { showDeleteDialog = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Icon(Icons.Default.Delete, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.result_delete_button))
                 }
             }
         }

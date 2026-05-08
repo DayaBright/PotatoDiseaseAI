@@ -32,8 +32,7 @@ class AnalisisRepository(private val context: Context) {
     suspend fun insertAnalisis(
         labelCnn: String,
         imagenUri: String,
-        precision: Float,
-        imagenGradcamReal: String? = null
+        precision: Float
     ): Long {
         val enfermedad = enfermedadDao.getByLabel(labelCnn)
         val enfermedadId = enfermedad?.id ?: run {
@@ -43,7 +42,6 @@ class AnalisisRepository(private val context: Context) {
         val analisis = AnalisisEntity(
             enfermedadId = enfermedadId,
             imagenCapturada = imagenUri,
-            imagenGradcamReal = imagenGradcamReal,
             precision = precision
         )
         return analisisDao.insert(analisis)
@@ -54,6 +52,25 @@ class AnalisisRepository(private val context: Context) {
 
     suspend fun deleteAnalisisById(id: Long, imageUri: String): Boolean =
         deleteInternal(id, imageUri)
+
+    /**
+     * Elimina todos los análisis: primero borra las imágenes del almacenamiento
+     * y luego limpia la tabla completa.
+     */
+    suspend fun deleteAllAnalisis(): Boolean {
+        return try {
+            val allAnalisis = analisisDao.getAllAnalisisList()
+            allAnalisis.forEach { item ->
+                FileUtils.deleteImage(Uri.parse(item.analisis.imagenCapturada))
+            }
+            analisisDao.deleteAll()
+            Log.d(TAG, "✓ Todos los análisis eliminados (${allAnalisis.size} registros)")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "✗ Error eliminando todos los análisis: ${e.message}", e)
+            false
+        }
+    }
 
     private suspend fun deleteInternal(id: Long, imageUri: String): Boolean {
         return try {

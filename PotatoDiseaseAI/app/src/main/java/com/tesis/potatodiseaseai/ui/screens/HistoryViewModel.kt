@@ -13,7 +13,8 @@ data class HistoryUiState(
     val storageSize: Double = 0.0,
     val isLoading: Boolean = true,
     val error: String? = null,
-    val showDeleteDialog: AnalisisConEnfermedad? = null
+    val showDeleteDialog: AnalisisConEnfermedad? = null,
+    val showDeleteAllDialog: Boolean = false
 )
 
 class HistoryViewModel(application: Application) : AndroidViewModel(application) {
@@ -42,6 +43,8 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    // ── Eliminar individual ──────────────────────────────────────────────────
+
     fun showDeleteDialog(analisis: AnalisisConEnfermedad) {
         _uiState.update { it.copy(showDeleteDialog = analisis) }
     }
@@ -57,6 +60,28 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
                 dismissDeleteDialog()
             } else {
                 _uiState.update { it.copy(error = "Error al eliminar el análisis") }
+            }
+        }
+    }
+
+    // ── Eliminar todo ────────────────────────────────────────────────────────
+
+    fun showDeleteAllDialog() {
+        _uiState.update { it.copy(showDeleteAllDialog = true) }
+    }
+
+    fun dismissDeleteAllDialog() {
+        _uiState.update { it.copy(showDeleteAllDialog = false) }
+    }
+
+    fun deleteAllAnalisis() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val success = repository.deleteAllAnalisis()
+            if (success) {
+                dismissDeleteAllDialog()
+            } else {
+                _uiState.update { it.copy(error = "Error al eliminar el historial", isLoading = false) }
             }
         }
     }

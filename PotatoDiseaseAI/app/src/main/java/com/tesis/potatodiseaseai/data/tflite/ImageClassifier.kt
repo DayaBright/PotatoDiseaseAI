@@ -109,7 +109,14 @@ class ImageClassifierHelper(context: Context) {
 
         return try {
             val tensorImage = TensorImage.fromBitmap(bitmap)
+
+            val startTime = System.nanoTime()
             val results = localClassifier.classify(tensorImage)
+            val endTime = System.nanoTime()
+
+            val inferenceTimeMs = (endTime - startTime) / 1_000_000
+
+            AppLogger.debug(TAG, "INFERENCIA_TFLITE: ${inferenceTimeMs} ms")
 
             if (results.isEmpty() || results[0].categories.isEmpty()) {
                 val error = AppError.ClassificationError("No se detectaron resultados")

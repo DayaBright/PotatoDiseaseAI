@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -34,6 +35,7 @@ import com.tesis.potatodiseaseai.ui.theme.Dimensions
 fun HelpScreen(
     innerPadding: PaddingValues,
     onNavigateToDetail: (Long) -> Unit = {},
+    onRepeatTutorial: () -> Unit = {},
     viewModel: HelpViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -107,38 +109,35 @@ fun HelpScreen(
                     )
                 }
 
-                // ── Sección: Contacto ──
+                // ── Sección: Tutorial ──
                 item {
-                    Card(
+                    Button(
+                        onClick = onRepeatTutorial,
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
+                        shape = RoundedCornerShape(Dimensions.cornerRadiusMedium),
+                        colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        )
+                        ),
+                        contentPadding = PaddingValues(Dimensions.spacingMedium)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(Dimensions.spacingMedium)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingSmall),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingSmall)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Outlined.ContactSupport,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.ContactSupport,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Column {
+                                Text(
+                                    text = "¿Repetir tutorial?",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Column {
-                                    Text(
-                                        text = "¿Necesitas ayuda?",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(modifier = Modifier.height(Dimensions.spacingSmall))
-                                    Text(
-                                        text = "Para soporte técnico o consultas agronómicas, contacta con nuestro equipo.",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                }
+                                Spacer(modifier = Modifier.height(Dimensions.spacingSmall))
                             }
                         }
                     }
@@ -221,8 +220,11 @@ private fun DiseaseCard(
                 )
                 Spacer(modifier = Modifier.height(Dimensions.spacingExtraSmall))
                 Text(
-                    text = enfermedad.agenteCausal.take(60) +
-                            if (enfermedad.agenteCausal.length > 60) "…" else "",
+                    text = if (enfermedad.tipoAgente.isNotBlank() && enfermedad.tipoAgente != "N/A")
+                               "${enfermedad.tipoAgente} — ${enfermedad.agenteCausal}".take(70) +
+                               if ("${enfermedad.tipoAgente} — ${enfermedad.agenteCausal}".length > 70) "…" else ""
+                           else enfermedad.agenteCausal.take(60) +
+                               if (enfermedad.agenteCausal.length > 60) "…" else "",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -297,7 +299,7 @@ private fun HelpSection(
 }
 
 /**
- * Obtiene el ID de un recurso drawable dado su nombre.
+ * Obtiene el ID de un recurso dado su nombre.
  * Retorna 0 si no existe o el nombre está vacío.
  */
 @SuppressLint("DiscouragedApi")

@@ -27,6 +27,9 @@
     <string name="history_delete_message">¿Estás seguro de que deseas eliminar este análisis de %1$s?</string>
     <string name="history_delete_confirm">Eliminar</string>
     <string name="history_delete_cancel">Cancelar</string>
+    <string name="history_delete_all_title">Eliminar todo el historial</string>
+    <string name="history_delete_all_message">¿Estás seguro de que deseas eliminar todos los análisis? Esta acción no se puede deshacer.</string>
+    <string name="cd_delete_all">Eliminar todo el historial</string>
     
     <!-- Result Screen -->
     <string name="result_title">Resultado del Análisis</string>
@@ -35,6 +38,18 @@
     <string name="result_gradcam_title">Mapa de Atención (Grad-CAM)</string>
     <string name="result_gradcam_placeholder">Próximamente: Visualización Grad-CAM</string>
     <string name="result_recommendations_title">Recomendaciones</string>
+    <string name="result_prevention_title">Prevención</string>
+    <string name="result_chemical_control_title">Control Químico</string>
+    <string name="result_biological_control_title">Control Biológico</string>
+    <string name="result_low_confidence_title">Confianza baja</string>
+    <string name="result_low_confidence_description">La precisión del análisis es menor al 70%. Para obtener un diagnóstico más confiable, intenta tomar una nueva foto siguiendo estos consejos:</string>
+    <string name="result_low_confidence_tips_title">Consejos para una mejor foto</string>
+    <string name="result_tip_clean_camera">Limpia el lente de la cámara antes de tomar la foto</string>
+    <string name="result_tip_center_leaf">Centra la hoja dentro del encuadre de la cámara</string>
+    <string name="result_tip_ensure_leaf">Asegúrate de que la imagen sea de una hoja de papa</string>
+    <string name="result_tip_good_lighting">Busca buena iluminación natural, evita sombras fuertes</string>
+    <string name="result_tip_avoid_blur">Mantén el dispositivo estable para evitar fotos borrosas</string>
+    <string name="result_tip_single_leaf">Enfócate en una sola hoja, evitando fondos distractores</string>
     <string name="result_delete_button">Eliminar detección</string>
     <string name="result_delete_title">Eliminar detección</string>
     <string name="result_delete_message">¿Estás seguro de que deseas eliminar esta detección?</string>

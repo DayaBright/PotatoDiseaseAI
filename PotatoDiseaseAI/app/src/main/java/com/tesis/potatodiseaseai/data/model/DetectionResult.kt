@@ -14,15 +14,6 @@ data class DetectionResult(
 
 object DiseaseDatabase {
     private val diseaseInfo = mapOf(
-        "bacterial wilt" to DiseaseInfo(
-            name = "Marchitez bacteriana",
-            recommendations = listOf(
-                "Eliminar plantas infectadas inmediatamente",
-                "Rotar cultivos durante 3-4 años",
-                "Usar variedades resistentes",
-                "Desinfectar herramientas de trabajo"
-            )
-        ),
         "early blight" to DiseaseInfo(
             name = "Tizón temprano",
             recommendations = listOf(

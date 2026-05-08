@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -47,7 +48,19 @@ fun HistoryScreen(
                 title = { Text(stringResource(R.string.history_title)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+                ),
+                actions = {
+                    // Botón para eliminar todo el historial (solo visible si hay análisis)
+                    if (uiState.analisis.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.showDeleteAllDialog() }) {
+                            Icon(
+                                imageVector = Icons.Default.DeleteSweep,
+                                contentDescription = stringResource(R.string.cd_delete_all),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -154,7 +167,7 @@ fun HistoryScreen(
         }
     }
 
-    // Diálogo de confirmación de eliminación
+    // Diálogo de confirmación de eliminación individual
     uiState.showDeleteDialog?.let { item ->
         AlertDialog(
             onDismissRequest = { viewModel.dismissDeleteDialog() },
@@ -172,6 +185,37 @@ fun HistoryScreen(
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissDeleteDialog() }) {
+                    Text(stringResource(R.string.history_delete_cancel))
+                }
+            }
+        )
+    }
+
+    // Diálogo de confirmación de eliminación de todo el historial
+    if (uiState.showDeleteAllDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissDeleteAllDialog() },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.DeleteSweep,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = { Text(stringResource(R.string.history_delete_all_title)) },
+            text = {
+                Text(stringResource(R.string.history_delete_all_message))
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.deleteAllAnalisis() }) {
+                    Text(
+                        stringResource(R.string.history_delete_confirm),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissDeleteAllDialog() }) {
                     Text(stringResource(R.string.history_delete_cancel))
                 }
             }
