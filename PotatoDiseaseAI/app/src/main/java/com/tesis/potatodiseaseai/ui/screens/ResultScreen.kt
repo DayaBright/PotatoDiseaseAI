@@ -25,6 +25,7 @@ import com.tesis.potatodiseaseai.data.repository.AnalisisRepository
 import com.tesis.potatodiseaseai.ui.screens.components.CachedImage
 import com.tesis.potatodiseaseai.ui.screens.components.DiagnosisCard
 import com.tesis.potatodiseaseai.utils.LabelNormalizer
+import com.tesis.potatodiseaseai.ui.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -159,7 +160,7 @@ fun ResultScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                            containerColor = AppTheme.colors.lowConfidenceContainer
                         )
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
@@ -167,13 +168,13 @@ fun ResultScreen(
                                 text = stringResource(R.string.result_low_confidence_tips_title),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                                color = AppTheme.colors.lowConfidenceText
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = stringResource(R.string.result_low_confidence_description),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                                color = AppTheme.colors.lowConfidenceText
                             )
                         }
                     }
@@ -190,7 +191,7 @@ fun ResultScreen(
                             imageVector = Icons.Default.CameraAlt,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.tertiary
+                            tint = AppTheme.colors.lowConfidenceAccent
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
@@ -209,9 +210,9 @@ fun ResultScreen(
                             icon = Icons.Outlined.Shield,
                             title = stringResource(R.string.result_prevention_title),
                             items = prevencion,
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            accentColor = MaterialTheme.colorScheme.primary
+                            containerColor = AppTheme.colors.preventionContainer,
+                            contentColor = AppTheme.colors.preventionText,
+                            accentColor = AppTheme.colors.preventionAccent
                         )
                     }
                 }
@@ -223,9 +224,9 @@ fun ResultScreen(
                             icon = Icons.Outlined.Science,
                             title = stringResource(R.string.result_chemical_control_title),
                             items = controlQuimico,
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            accentColor = MaterialTheme.colorScheme.secondary
+                            containerColor = AppTheme.colors.chemicalControlContainer,
+                            contentColor = AppTheme.colors.chemicalControlText,
+                            accentColor = AppTheme.colors.chemicalControlAccent
                         )
                     }
                 }
@@ -237,9 +238,9 @@ fun ResultScreen(
                             icon = Icons.Outlined.Eco,
                             title = stringResource(R.string.result_biological_control_title),
                             items = controlBiologico,
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                            accentColor = MaterialTheme.colorScheme.tertiary
+                            containerColor = AppTheme.colors.biologicalControlContainer,
+                            contentColor = AppTheme.colors.biologicalControlText,
+                            accentColor = AppTheme.colors.biologicalControlAccent
                         )
                     }
                 }
@@ -280,7 +281,7 @@ private fun RecommendationSection(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = containerColor.copy(alpha = 0.6f)
+            containerColor = containerColor
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {

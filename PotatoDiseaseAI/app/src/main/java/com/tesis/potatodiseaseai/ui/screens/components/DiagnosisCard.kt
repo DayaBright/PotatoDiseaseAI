@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tesis.potatodiseaseai.R
+import com.tesis.potatodiseaseai.ui.theme.AppTheme
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -26,9 +27,9 @@ fun DiagnosisCard(
     val isLowConfidence = confidence < 0.70f
 
     val containerColor = when {
-        isLowConfidence -> MaterialTheme.colorScheme.tertiaryContainer
-        isHealthy -> MaterialTheme.colorScheme.primaryContainer
-        else -> MaterialTheme.colorScheme.errorContainer
+        isLowConfidence -> AppTheme.colors.lowConfidenceContainer
+        isHealthy -> AppTheme.colors.preventionContainer
+        else -> AppTheme.colors.diseaseAlertContainer
     }
 
     val iconVector = when {
@@ -38,15 +39,22 @@ fun DiagnosisCard(
     }
 
     val iconTint = when {
-        isLowConfidence -> MaterialTheme.colorScheme.tertiary
-        isHealthy -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.error
+        isLowConfidence -> AppTheme.colors.lowConfidenceAccent
+        isHealthy -> AppTheme.colors.preventionAccent
+        else -> AppTheme.colors.diseaseAlertAccent
+    }
+    
+    val textColor = when {
+        isLowConfidence -> AppTheme.colors.lowConfidenceText
+        isHealthy -> AppTheme.colors.preventionText
+        else -> AppTheme.colors.diseaseAlertText
     }
 
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = containerColor
+            containerColor = containerColor,
+            contentColor = textColor
         )
     ) {
         Row(

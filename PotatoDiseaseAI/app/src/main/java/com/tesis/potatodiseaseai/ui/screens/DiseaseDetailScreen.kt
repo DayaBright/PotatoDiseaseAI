@@ -24,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tesis.potatodiseaseai.data.database.EnfermedadEntity
+import com.tesis.potatodiseaseai.ui.theme.AppTheme
 import com.tesis.potatodiseaseai.ui.theme.Dimensions
 
 /**
@@ -226,8 +227,9 @@ fun DiseaseDetailScreen(
                         icon = Icons.Outlined.Shield,
                         title = "Prevención",
                         items = prevencion,
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                        accentColor = MaterialTheme.colorScheme.primary
+                        containerColor = AppTheme.colors.preventionContainer,
+                        accentColor = AppTheme.colors.preventionAccent,
+                        contentColor = AppTheme.colors.preventionText
                     )
                 }
             }
@@ -240,8 +242,9 @@ fun DiseaseDetailScreen(
                         icon = Icons.Outlined.Science,
                         title = "Control Químico",
                         items = controlQuimico,
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-                        accentColor = MaterialTheme.colorScheme.secondary
+                        containerColor = AppTheme.colors.chemicalControlContainer,
+                        accentColor = AppTheme.colors.chemicalControlAccent,
+                        contentColor = AppTheme.colors.chemicalControlText
                     )
                 }
             }
@@ -254,8 +257,9 @@ fun DiseaseDetailScreen(
                         icon = Icons.Outlined.Eco,
                         title = "Control Biológico",
                         items = controlBiologico,
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f),
-                        accentColor = MaterialTheme.colorScheme.tertiary
+                        containerColor = AppTheme.colors.biologicalControlContainer,
+                        accentColor = AppTheme.colors.biologicalControlAccent,
+                        contentColor = AppTheme.colors.biologicalControlText
                     )
                 }
             }
@@ -266,7 +270,7 @@ fun DiseaseDetailScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
                         )
                     ) {
                         Column(modifier = Modifier.padding(Dimensions.spacingMedium)) {
@@ -352,12 +356,13 @@ private fun DetailListCard(
     title: String,
     items: List<String>,
     containerColor: Color,
-    accentColor: Color
+    accentColor: Color,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(Dimensions.cardElevation),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
+        colors = CardDefaults.cardColors(containerColor = containerColor, contentColor = contentColor)
     ) {
         Column(
             modifier = Modifier.padding(Dimensions.spacingMedium)
@@ -406,6 +411,7 @@ private fun DetailListCard(
                     Text(
                         text = item,
                         style = MaterialTheme.typography.bodyMedium,
+                        color = contentColor,
                         modifier = Modifier.weight(1f)
                     )
                 }
