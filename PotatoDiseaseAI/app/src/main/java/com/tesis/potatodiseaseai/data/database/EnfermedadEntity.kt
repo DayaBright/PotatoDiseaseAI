@@ -38,6 +38,10 @@ data class EnfermedadEntity(
     val controlQuimico: String,
     /** Agentes biológicos o prácticas de biocontrol */
     val controlBiologico: String,
+    /** Detalles explicativos para el agricultor sobre el tratamiento químico */
+    val detalleControlQuimico: String = "",
+    /** Detalles explicativos para el agricultor sobre el tratamiento biológico */
+    val detalleControlBiologico: String = "",
     /** Nombre del recurso drawable para la hoja de referencia (normal) */
     val imagenReferencia: String,
     /** Nombre del recurso drawable para la imagen Grad-CAM representativa */

@@ -4,10 +4,12 @@ package com.tesis.potatodiseaseai.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -45,6 +47,7 @@ fun ResultScreen(
     val repository = remember { AnalisisRepository(context) }
     
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var expandedDetail by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     // ── Cargar datos de la enfermedad desde Room ──
     val db = remember { AppDatabase.getDatabase(context) }
@@ -226,7 +229,10 @@ fun ResultScreen(
                             items = controlQuimico,
                             containerColor = AppTheme.colors.chemicalControlContainer,
                             contentColor = AppTheme.colors.chemicalControlText,
-                            accentColor = AppTheme.colors.chemicalControlAccent
+                            accentColor = AppTheme.colors.chemicalControlAccent,
+                            onExpand = if (enfermedad?.detalleControlQuimico?.isNotBlank() == true) {
+                                { expandedDetail = Pair("Detalle del Tratamiento Químico", enfermedad!!.detalleControlQuimico) }
+                            } else null
                         )
                     }
                 }
@@ -240,7 +246,10 @@ fun ResultScreen(
                             items = controlBiologico,
                             containerColor = AppTheme.colors.biologicalControlContainer,
                             contentColor = AppTheme.colors.biologicalControlText,
-                            accentColor = AppTheme.colors.biologicalControlAccent
+                            accentColor = AppTheme.colors.biologicalControlAccent,
+                            onExpand = if (enfermedad?.detalleControlBiologico?.isNotBlank() == true) {
+                                { expandedDetail = Pair("Detalle del Tratamiento Biológico", enfermedad!!.detalleControlBiologico) }
+                            } else null
                         )
                     }
                 }
@@ -264,6 +273,26 @@ fun ResultScreen(
             }
         }
     }
+
+    expandedDetail?.let { (title, detail) ->
+        AlertDialog(
+            onDismissRequest = { expandedDetail = null },
+            title = {
+                Text(text = title, fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text(text = detail, style = MaterialTheme.typography.bodyLarge)
+            },
+            confirmButton = {
+                TextButton(onClick = { expandedDetail = null }) {
+                    Text("Entendido", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
 }
 
 /**
@@ -276,31 +305,48 @@ private fun RecommendationSection(
     items: List<String>,
     containerColor: androidx.compose.ui.graphics.Color,
     contentColor: androidx.compose.ui.graphics.Color,
-    accentColor: androidx.compose.ui.graphics.Color
+    accentColor: androidx.compose.ui.graphics.Color,
+    onExpand: (() -> Unit)? = null
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .let { if (onExpand != null) it.clickable(onClick = onExpand) else it },
         colors = CardDefaults.cardColors(
             containerColor = containerColor
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = accentColor,
-                    modifier = Modifier.size(22.dp)
-                )
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = accentColor
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = accentColor
+                    )
+                }
+                if (onExpand != null) {
+                    Icon(
+                        imageVector = Icons.Default.OpenInNew,
+                        contentDescription = "Ver detalles",
+                        tint = accentColor,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(8.dp))
             items.forEach { item ->

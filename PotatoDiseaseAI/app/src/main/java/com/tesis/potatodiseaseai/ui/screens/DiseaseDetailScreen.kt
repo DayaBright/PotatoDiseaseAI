@@ -2,6 +2,7 @@ package com.tesis.potatodiseaseai.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,8 +13,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.automirrored.outlined.TrendingDown
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +41,7 @@ fun DiseaseDetailScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    var expandedDetail by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     Scaffold(
         topBar = {
@@ -244,7 +247,10 @@ fun DiseaseDetailScreen(
                         items = controlQuimico,
                         containerColor = AppTheme.colors.chemicalControlContainer,
                         accentColor = AppTheme.colors.chemicalControlAccent,
-                        contentColor = AppTheme.colors.chemicalControlText
+                        contentColor = AppTheme.colors.chemicalControlText,
+                        onExpand = if (enfermedad.detalleControlQuimico.isNotBlank()) {
+                            { expandedDetail = Pair("Detalle del Tratamiento Químico", enfermedad.detalleControlQuimico) }
+                        } else null
                     )
                 }
             }
@@ -259,7 +265,10 @@ fun DiseaseDetailScreen(
                         items = controlBiologico,
                         containerColor = AppTheme.colors.biologicalControlContainer,
                         accentColor = AppTheme.colors.biologicalControlAccent,
-                        contentColor = AppTheme.colors.biologicalControlText
+                        contentColor = AppTheme.colors.biologicalControlText,
+                        onExpand = if (enfermedad.detalleControlBiologico.isNotBlank()) {
+                            { expandedDetail = Pair("Detalle del Tratamiento Biológico", enfermedad.detalleControlBiologico) }
+                        } else null
                     )
                 }
             }
@@ -302,6 +311,26 @@ fun DiseaseDetailScreen(
                 }
             }
         }
+    }
+
+    expandedDetail?.let { (title, detail) ->
+        AlertDialog(
+            onDismissRequest = { expandedDetail = null },
+            title = {
+                Text(text = title, fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text(text = detail, style = MaterialTheme.typography.bodyLarge)
+            },
+            confirmButton = {
+                TextButton(onClick = { expandedDetail = null }) {
+                    Text("Entendido", fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -357,10 +386,13 @@ private fun DetailListCard(
     items: List<String>,
     containerColor: Color,
     accentColor: Color,
-    contentColor: Color = MaterialTheme.colorScheme.onSurface
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    onExpand: (() -> Unit)? = null
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .let { if (onExpand != null) it.clickable(onClick = onExpand) else it },
         elevation = CardDefaults.cardElevation(Dimensions.cardElevation),
         colors = CardDefaults.cardColors(containerColor = containerColor, contentColor = contentColor)
     ) {
@@ -368,21 +400,35 @@ private fun DetailListCard(
             modifier = Modifier.padding(Dimensions.spacingMedium)
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingSmall),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = accentColor,
-                    modifier = Modifier.size(Dimensions.iconSizeSmall)
-                )
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = accentColor
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingSmall),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(Dimensions.iconSizeSmall)
+                    )
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = accentColor
+                    )
+                }
+                if (onExpand != null) {
+                    Icon(
+                        imageVector = Icons.Default.OpenInNew,
+                        contentDescription = "Ver detalles",
+                        tint = accentColor,
+                        modifier = Modifier.size(Dimensions.iconSizeSmall)
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(Dimensions.spacingSmall))
             items.forEachIndexed { index, item ->
