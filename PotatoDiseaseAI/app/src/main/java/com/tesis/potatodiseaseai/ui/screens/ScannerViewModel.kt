@@ -68,7 +68,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
         }
 
         val currentTime = System.currentTimeMillis()
-        if (currentTime - lastAnalysisTime < 1000) {
+        if (currentTime - lastAnalysisTime < 2000) {
             imageProxy.close()
             return
         }

@@ -8,7 +8,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -21,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -84,156 +84,147 @@ fun ScannerScreen(innerPadding: PaddingValues) {
         // Fracción del lado menor que se recortará
         val guideFraction = 0.85f
 
-        // Animación sutil de pulso para las esquinas
-        val infiniteTransition = rememberInfiniteTransition(label = "guide_pulse")
-        val pulseAlpha by
-                infiniteTransition.animateFloat(
-                        initialValue = 0.6f,
-                        targetValue = 1f,
-                        animationSpec =
-                                infiniteRepeatable(
-                                        animation = tween(1200, easing = EaseInOutCubic),
-                                        repeatMode = RepeatMode.Reverse
-                                ),
-                        label = "corner_alpha"
-                )
-
         // Overlay con recorte cuadrado centrado
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val side = size.minDimension * guideFraction
-            val left = (size.width - side) / 2f
-            val top = (size.height - side) / 2f
-            val cornerRadius = 24.dp.toPx()
-            val bracketLen = side * 0.15f // largo de cada brazo de esquina
-            val strokeW = 3.dp.toPx()
+        Spacer(
+            modifier = Modifier.fillMaxSize().drawWithCache {
+                val side = size.minDimension * guideFraction
+                val left = (size.width - side) / 2f
+                val top = (size.height - side) / 2f
+                val cornerRadius = 24.dp.toPx()
+                val bracketLen = side * 0.15f // largo de cada brazo de esquina
+                val strokeW = 3.dp.toPx()
 
-            // 1. Fondo oscuro con hueco transparente
-            val cutoutPath =
-                    Path().apply {
-                        addRoundRect(
-                                androidx.compose.ui.geometry.RoundRect(
-                                        rect = Rect(Offset(left, top), Size(side, side)),
-                                        cornerRadius = CornerRadius(cornerRadius)
-                                )
+                // 1. Fondo oscuro con hueco transparente
+                val cutoutPath = Path().apply {
+                    addRoundRect(
+                        androidx.compose.ui.geometry.RoundRect(
+                            rect = Rect(Offset(left, top), Size(side, side)),
+                            cornerRadius = CornerRadius(cornerRadius)
                         )
+                    )
+                }
+
+                val bracketColor = Color(0xFF4CAF50) // Verde fijo (sin animación)
+                val bracketStroke = Stroke(width = strokeW, cap = StrokeCap.Round)
+
+                onDrawBehind {
+                    clipPath(cutoutPath, clipOp = ClipOp.Difference) {
+                        drawRect(Color.Black.copy(alpha = 0.45f))
                     }
-            clipPath(cutoutPath, clipOp = ClipOp.Difference) {
-                drawRect(Color.Black.copy(alpha = 0.45f))
+
+                    // 2. Borde sutil del recuadro
+                    drawRoundRect(
+                        color = Color.White.copy(alpha = 0.25f),
+                        topLeft = Offset(left, top),
+                        size = Size(side, side),
+                        cornerRadius = CornerRadius(cornerRadius),
+                        style = Stroke(width = 1.dp.toPx())
+                    )
+
+                    // 3. Esquinas fijas (tipo "visor")
+
+                    // ── Esquina superior-izquierda
+                    drawLine(
+                        bracketColor,
+                        Offset(left + cornerRadius, top),
+                        Offset(left + bracketLen, top),
+                        strokeWidth = strokeW,
+                        cap = StrokeCap.Round
+                    )
+                    drawLine(
+                        bracketColor,
+                        Offset(left, top + cornerRadius),
+                        Offset(left, top + bracketLen),
+                        strokeWidth = strokeW,
+                        cap = StrokeCap.Round
+                    )
+                    drawArc(
+                        bracketColor,
+                        180f,
+                        90f,
+                        false,
+                        topLeft = Offset(left, top),
+                        size = Size(cornerRadius * 2, cornerRadius * 2),
+                        style = bracketStroke
+                    )
+
+                    // ── Esquina superior-derecha
+                    drawLine(
+                        bracketColor,
+                        Offset(left + side - cornerRadius, top),
+                        Offset(left + side - bracketLen, top),
+                        strokeWidth = strokeW,
+                        cap = StrokeCap.Round
+                    )
+                    drawLine(
+                        bracketColor,
+                        Offset(left + side, top + cornerRadius),
+                        Offset(left + side, top + bracketLen),
+                        strokeWidth = strokeW,
+                        cap = StrokeCap.Round
+                    )
+                    drawArc(
+                        bracketColor,
+                        270f,
+                        90f,
+                        false,
+                        topLeft = Offset(left + side - cornerRadius * 2, top),
+                        size = Size(cornerRadius * 2, cornerRadius * 2),
+                        style = bracketStroke
+                    )
+
+                    // ── Esquina inferior-izquierda
+                    drawLine(
+                        bracketColor,
+                        Offset(left + cornerRadius, top + side),
+                        Offset(left + bracketLen, top + side),
+                        strokeWidth = strokeW,
+                        cap = StrokeCap.Round
+                    )
+                    drawLine(
+                        bracketColor,
+                        Offset(left, top + side - cornerRadius),
+                        Offset(left, top + side - bracketLen),
+                        strokeWidth = strokeW,
+                        cap = StrokeCap.Round
+                    )
+                    drawArc(
+                        bracketColor,
+                        90f,
+                        90f,
+                        false,
+                        topLeft = Offset(left, top + side - cornerRadius * 2),
+                        size = Size(cornerRadius * 2, cornerRadius * 2),
+                        style = bracketStroke
+                    )
+
+                    // ── Esquina inferior-derecha
+                    drawLine(
+                        bracketColor,
+                        Offset(left + side - cornerRadius, top + side),
+                        Offset(left + side - bracketLen, top + side),
+                        strokeWidth = strokeW,
+                        cap = StrokeCap.Round
+                    )
+                    drawLine(
+                        bracketColor,
+                        Offset(left + side, top + side - cornerRadius),
+                        Offset(left + side, top + side - bracketLen),
+                        strokeWidth = strokeW,
+                        cap = StrokeCap.Round
+                    )
+                    drawArc(
+                        bracketColor,
+                        0f,
+                        90f,
+                        false,
+                        topLeft = Offset(left + side - cornerRadius * 2, top + side - cornerRadius * 2),
+                        size = Size(cornerRadius * 2, cornerRadius * 2),
+                        style = bracketStroke
+                    )
+                }
             }
-
-            // 2. Borde sutil del recuadro
-            drawRoundRect(
-                    color = Color.White.copy(alpha = 0.25f),
-                    topLeft = Offset(left, top),
-                    size = Size(side, side),
-                    cornerRadius = CornerRadius(cornerRadius),
-                    style = Stroke(width = 1.dp.toPx())
-            )
-
-            // 3. Esquinas animadas (tipo "visor")
-            val bracketColor = Color(0xFF4CAF50).copy(alpha = pulseAlpha) // Verde suave
-            val bracketStroke = Stroke(width = strokeW, cap = StrokeCap.Round)
-
-            // ── Esquina superior-izquierda
-            drawLine(
-                    bracketColor,
-                    Offset(left + cornerRadius, top),
-                    Offset(left + bracketLen, top),
-                    strokeWidth = strokeW,
-                    cap = StrokeCap.Round
-            )
-            drawLine(
-                    bracketColor,
-                    Offset(left, top + cornerRadius),
-                    Offset(left, top + bracketLen),
-                    strokeWidth = strokeW,
-                    cap = StrokeCap.Round
-            )
-            drawArc(
-                    bracketColor,
-                    180f,
-                    90f,
-                    false,
-                    topLeft = Offset(left, top),
-                    size = Size(cornerRadius * 2, cornerRadius * 2),
-                    style = bracketStroke
-            )
-
-            // ── Esquina superior-derecha
-            drawLine(
-                    bracketColor,
-                    Offset(left + side - cornerRadius, top),
-                    Offset(left + side - bracketLen, top),
-                    strokeWidth = strokeW,
-                    cap = StrokeCap.Round
-            )
-            drawLine(
-                    bracketColor,
-                    Offset(left + side, top + cornerRadius),
-                    Offset(left + side, top + bracketLen),
-                    strokeWidth = strokeW,
-                    cap = StrokeCap.Round
-            )
-            drawArc(
-                    bracketColor,
-                    270f,
-                    90f,
-                    false,
-                    topLeft = Offset(left + side - cornerRadius * 2, top),
-                    size = Size(cornerRadius * 2, cornerRadius * 2),
-                    style = bracketStroke
-            )
-
-            // ── Esquina inferior-izquierda
-            drawLine(
-                    bracketColor,
-                    Offset(left + cornerRadius, top + side),
-                    Offset(left + bracketLen, top + side),
-                    strokeWidth = strokeW,
-                    cap = StrokeCap.Round
-            )
-            drawLine(
-                    bracketColor,
-                    Offset(left, top + side - cornerRadius),
-                    Offset(left, top + side - bracketLen),
-                    strokeWidth = strokeW,
-                    cap = StrokeCap.Round
-            )
-            drawArc(
-                    bracketColor,
-                    90f,
-                    90f,
-                    false,
-                    topLeft = Offset(left, top + side - cornerRadius * 2),
-                    size = Size(cornerRadius * 2, cornerRadius * 2),
-                    style = bracketStroke
-            )
-
-            // ── Esquina inferior-derecha
-            drawLine(
-                    bracketColor,
-                    Offset(left + side - cornerRadius, top + side),
-                    Offset(left + side - bracketLen, top + side),
-                    strokeWidth = strokeW,
-                    cap = StrokeCap.Round
-            )
-            drawLine(
-                    bracketColor,
-                    Offset(left + side, top + side - cornerRadius),
-                    Offset(left + side, top + side - bracketLen),
-                    strokeWidth = strokeW,
-                    cap = StrokeCap.Round
-            )
-            drawArc(
-                    bracketColor,
-                    0f,
-                    90f,
-                    false,
-                    topLeft = Offset(left + side - cornerRadius * 2, top + side - cornerRadius * 2),
-                    size = Size(cornerRadius * 2, cornerRadius * 2),
-                    style = bracketStroke
-            )
-        }
+        )
 
         // Texto guía ARRIBA del cuadro
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {

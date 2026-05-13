@@ -267,19 +267,8 @@ fun OnboardingScreen(onFinish: () -> Unit) {
 
 @Composable
 private fun OnboardingPageContent(page: OnboardingPage, modifier: Modifier = Modifier) {
-    // Animación de entrada del ícono principal
-    val infiniteTransition = rememberInfiniteTransition(label = "icon_pulse")
-    val iconScale by
-            infiniteTransition.animateFloat(
-                    initialValue = 1f,
-                    targetValue = 1.08f,
-                    animationSpec =
-                            infiniteRepeatable(
-                                    animation = tween(2000, easing = EaseInOutCubic),
-                                    repeatMode = RepeatMode.Reverse
-                            ),
-                    label = "icon_scale"
-            )
+    // Sin animación continua para mejor rendimiento
+    val iconScale = 1f
 
     Column(
             modifier = modifier,
