@@ -73,9 +73,9 @@ object ImageUtils {
                 return imageUri
             }
 
-            val correctedFile = File(context.cacheDir, "corrected_${System.currentTimeMillis()}.jpg")
+            val correctedFile = File(context.cacheDir, "corrected_${System.currentTimeMillis()}.webp")
             FileOutputStream(correctedFile).use { out ->
-                rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 95, out)
+                rotatedBitmap.compress(Bitmap.CompressFormat.WEBP, 80, out)
             }
 
             AppLogger.debug(TAG, "✓ Imagen corregida guardada: ${correctedFile.absolutePath}")  // ✅ CAMBIAR

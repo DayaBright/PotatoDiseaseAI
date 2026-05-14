@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PotatoDiseaseAI</string>
+    <string name="app_name">Papa Sana</string>
     
     <!-- Navigation -->
     <string name="nav_scanner">Escanear</string>

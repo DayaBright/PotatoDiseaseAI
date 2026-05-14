@@ -9,7 +9,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.tesis.potatodiseaseai"
+        applicationId = "com.tesis.potatodiseaseai.v2"
         minSdk = 21
         targetSdk = 34
         versionCode = 1
@@ -20,7 +20,12 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // Activa la reducción de código (Minificación)
+            isMinifyEnabled = true
+
+            // También es recomendable activar la reducción de recursos (imágenes, xml no usados)
+            isShrinkResources = true
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -64,7 +69,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
-    // 👇 SOLO UN BOM
+    //  SOLO UN BOM
     implementation(platform(libs.androidx.compose.bom))
 
     implementation(libs.androidx.compose.ui)

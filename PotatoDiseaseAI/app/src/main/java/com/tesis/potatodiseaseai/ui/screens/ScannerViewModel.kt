@@ -23,6 +23,8 @@ import kotlinx.coroutines.launch
 import androidx.camera.core.ImageProxy
 import java.io.File
 import java.io.FileOutputStream
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
 
 data class ScannerUiState(
     val flashEnabled: Boolean = false,
@@ -222,9 +224,9 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                     // ── Confianza baja: guardar imagen temporal solo para mostrar en ResultScreen ──
                     val tempDir = File(ctx.cacheDir, "temp_detections")
                     if (!tempDir.exists()) tempDir.mkdirs()
-                    val tempFile = File(tempDir, "TEMP_${System.currentTimeMillis()}.jpg")
+                    val tempFile = File(tempDir, "TEMP_${System.currentTimeMillis()}.webp")
                     FileOutputStream(tempFile).use { out ->
-                        croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
+                        croppedBitmap.compress(Bitmap.CompressFormat.WEBP, 80, out)
                     }
                     savedUri = Uri.fromFile(tempFile)
                     detectionId = null
@@ -233,10 +235,10 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                     // ── PASO 5: Guardar imagen recortada (UNA sola vez, directo) ──
                     val directory = File(ctx.filesDir, "detections")
                     if (!directory.exists()) directory.mkdirs()
-                    val filename = "IMG_${System.currentTimeMillis()}.jpg"
+                    val filename = "IMG_${System.currentTimeMillis()}.webp"
                     val file = File(directory, filename)
                     FileOutputStream(file).use { out ->
-                        croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                        croppedBitmap.compress(Bitmap.CompressFormat.WEBP, 80, out)
                     }
                     savedUri = Uri.fromFile(file)
                     AppLogger.debug(TAG, "✓ Imagen guardada: ${file.absolutePath}")
@@ -361,9 +363,9 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 if (isLowConfidence) {
                     val tempDir = File(ctx.cacheDir, "temp_detections")
                     if (!tempDir.exists()) tempDir.mkdirs()
-                    val tempFile = File(tempDir, "TEMP_${System.currentTimeMillis()}.jpg")
+                    val tempFile = File(tempDir, "TEMP_${System.currentTimeMillis()}.webp")
                     FileOutputStream(tempFile).use { out ->
-                        letterboxedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
+                        letterboxedBitmap.compress(Bitmap.CompressFormat.WEBP, 80, out)
                     }
                     savedUri = Uri.fromFile(tempFile)
                     detectionId = null
@@ -371,10 +373,10 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 } else {
                     val directory = File(ctx.filesDir, "detections")
                     if (!directory.exists()) directory.mkdirs()
-                    val filename = "IMG_${System.currentTimeMillis()}.jpg"
+                    val filename = "IMG_${System.currentTimeMillis()}.webp"
                     val file = File(directory, filename)
                     FileOutputStream(file).use { out ->
-                        letterboxedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                        letterboxedBitmap.compress(Bitmap.CompressFormat.WEBP, 80, out)
                     }
                     savedUri = Uri.fromFile(file)
                     AppLogger.debug(TAG, "✓ Imagen guardada: ${file.absolutePath}")
@@ -427,7 +429,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
         val scaledH = (srcH * scale).toInt()
 
         // Crear bitmap negro de targetSize×targetSize
-        val output = Bitmap.createBitmap(targetSize, targetSize, Bitmap.Config.ARGB_8888)
+        val output = createBitmap(targetSize, targetSize)
         val canvas = Canvas(output)
         canvas.drawColor(Color.BLACK)
 
@@ -435,7 +437,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
         val offsetX = (targetSize - scaledW) / 2f
         val offsetY = (targetSize - scaledH) / 2f
 
-        val scaledBitmap = Bitmap.createScaledBitmap(source, scaledW, scaledH, true)
+        val scaledBitmap = source.scale(scaledW, scaledH)
         canvas.drawBitmap(scaledBitmap, offsetX, offsetY, Paint(Paint.FILTER_BITMAP_FLAG))
 
         if (scaledBitmap !== source) scaledBitmap.recycle()

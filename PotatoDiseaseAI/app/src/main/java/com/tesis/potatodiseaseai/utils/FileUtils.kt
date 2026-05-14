@@ -49,12 +49,12 @@ object FileUtils {
             }
             
             // Crear archivo con timestamp
-            val filename = "IMG_${System.currentTimeMillis()}.jpg"
+            val filename = "IMG_${System.currentTimeMillis()}.webp"
             val file = File(directory, filename)
             
             // Guardar bitmap
             FileOutputStream(file).use { out ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out) // Reducido a 85% calidad
+                bitmap.compress(Bitmap.CompressFormat.WEBP, 80, out) // Reducido a 80% calidad en WEBP
             }
             
             Uri.fromFile(file).also {
@@ -130,7 +130,7 @@ object FileUtils {
         try {
             val cacheDir = context.cacheDir
             val tempFiles = cacheDir.listFiles { file ->
-                file.extension == "jpg" && (
+                (file.extension == "jpg" || file.extension == "webp") && (
                     file.name.startsWith("temp_") ||
                     file.name.startsWith("corrected_") ||
                     file.name.startsWith("cropped_")
