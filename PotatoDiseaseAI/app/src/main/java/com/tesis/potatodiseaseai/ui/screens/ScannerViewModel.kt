@@ -344,8 +344,11 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 // ── PASO 2: Corregir rotación EXIF ──
                 rotatedBitmap = fixRotationInMemory(ctx, sourceUri, rawBitmap)
 
-                // ── PASO 3: Letterbox a 224×224 (sin recorte, sin distorsión) ──
-                letterboxedBitmap = letterboxBitmap(rotatedBitmap, 224)
+                // ── PASO 3: Letterbox a un tamaño adecuado para la UI (sin recorte, sin distorsión) ──
+                // Usamos un tamaño mayor para evitar que la imagen se vea borrosa en la pantalla de resultados.
+                // ImageClassifierHelper redimensionará internamente la imagen al tamaño requerido por el modelo.
+                val targetSize = maxOf(rotatedBitmap.width, rotatedBitmap.height).coerceAtMost(1024)
+                letterboxedBitmap = letterboxBitmap(rotatedBitmap, targetSize)
                 AppLogger.debug(TAG, "Imagen letterbox: ${letterboxedBitmap.width}x${letterboxedBitmap.height} (original: ${rotatedBitmap.width}x${rotatedBitmap.height})")
 
                 // ── PASO 4: Clasificar ──
