@@ -88,8 +88,9 @@ fun ScannerScreen(innerPadding: PaddingValues) {
         Spacer(
             modifier = Modifier.fillMaxSize().drawWithCache {
                 val side = size.minDimension * guideFraction
+                val verticalOffsetPx = 60.dp.toPx()
                 val left = (size.width - side) / 2f
-                val top = (size.height - side) / 2f
+                val top = (size.height - side) / 2f - verticalOffsetPx
                 val cornerRadius = 24.dp.toPx()
                 val bracketLen = side * 0.15f // largo de cada brazo de esquina
                 val strokeW = 3.dp.toPx()
@@ -229,31 +230,18 @@ fun ScannerScreen(innerPadding: PaddingValues) {
         // Texto guía ARRIBA del cuadro
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val side = maxHeight.value.coerceAtMost(maxWidth.value) * guideFraction
-            val guideTop = (maxHeight.value - side) / 2f
+            val verticalOffset = 60f
+            val guideTop = (maxHeight.value - side) / 2f - verticalOffset
             
             Column(
                 modifier = Modifier
-                    .padding(top = (guideTop - 100).dp)
+                    .padding(top = maxOf(8f, guideTop - 80f).dp)
                     .align(Alignment.TopCenter),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.scanner_guide_text),
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .background(
-                            Color.Black.copy(alpha = 0.35f),
-                            RoundedCornerShape(20.dp)
-                        )
-                        .padding(horizontal = 24.dp, vertical = 8.dp)
-                )
-
-                Text(
-                    text = stringResource(R.string.scanner_guide_text_capture),
+                    text = "${stringResource(R.string.scanner_guide_text)}\n${stringResource(R.string.scanner_guide_text_capture)}",
                     color = Color.White,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
@@ -271,7 +259,8 @@ fun ScannerScreen(innerPadding: PaddingValues) {
         // Clasificación en vivo DEBAJO del cuadro
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val side = maxHeight.value.coerceAtMost(maxWidth.value) * guideFraction
-            val guideTop = (maxHeight.value - side) / 2f
+            val verticalOffset = 60f
+            val guideTop = (maxHeight.value - side) / 2f - verticalOffset
             val guideBottom = guideTop + side
             
             Column(

@@ -56,6 +56,19 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
 
     private val repository = AnalisisRepository(application.applicationContext)
 
+    @Volatile
+    private var diseaseNamesMap = emptyMap<String, String>()
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.getAllEnfermedades().collect { list ->
+                val newMap = mutableMapOf<String, String>()
+                list.forEach { newMap[it.labelCnn] = it.nombre }
+                diseaseNamesMap = newMap
+            }
+        }
+    }
+
     fun toggleFlash() {
         _uiState.value = _uiState.value.copy(flashEnabled = !_uiState.value.flashEnabled)
     }
@@ -100,16 +113,23 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 val guideCamPx = (guideScreenPx / fillScale).toInt()
                     .coerceAtMost(minOf(rotatedBitmap.width, rotatedBitmap.height))
 
+                val verticalOffsetDp = 60f
+                val verticalOffsetPx = verticalOffsetDp * displayMetrics.density
+                val verticalOffsetCamPx = (verticalOffsetPx / fillScale).toInt()
+
                 val x = (rotatedBitmap.width - guideCamPx) / 2
-                val y = (rotatedBitmap.height - guideCamPx) / 2
-                croppedBitmap = Bitmap.createBitmap(rotatedBitmap, x, y, guideCamPx, guideCamPx)
+                val y = (rotatedBitmap.height - guideCamPx) / 2 - verticalOffsetCamPx
+                val safeY = y.coerceIn(0, rotatedBitmap.height - guideCamPx)
+                croppedBitmap = Bitmap.createBitmap(rotatedBitmap, x, safeY, guideCamPx, guideCamPx)
 
                 val result = localClassifier.classify(croppedBitmap)
                 
                 if (result.error == null && result.label.isNotBlank()) {
                     val isLowConfidence = result.confidence < 0.70f
+                    val normalizedLabel = com.tesis.potatodiseaseai.utils.LabelNormalizer.normalize(result.label)
+                    val translatedName = diseaseNamesMap[normalizedLabel] ?: result.label
                     _uiState.value = _uiState.value.copy(
-                        liveClassification = if (isLowConfidence) null else result.label,
+                        liveClassification = if (isLowConfidence) null else translatedName,
                         isLiveLowConfidence = isLowConfidence
                     )
                 }
@@ -202,9 +222,14 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 val guideCamPx = (guideScreenPx / fillScale).toInt()
                     .coerceAtMost(minOf(rotatedBitmap.width, rotatedBitmap.height))
 
+                val verticalOffsetDp = 60f
+                val verticalOffsetPx = verticalOffsetDp * displayMetrics.density
+                val verticalOffsetCamPx = (verticalOffsetPx / fillScale).toInt()
+
                 val x = (rotatedBitmap.width - guideCamPx) / 2
-                val y = (rotatedBitmap.height - guideCamPx) / 2
-                croppedBitmap = Bitmap.createBitmap(rotatedBitmap, x, y, guideCamPx, guideCamPx)
+                val y = (rotatedBitmap.height - guideCamPx) / 2 - verticalOffsetCamPx
+                val safeY = y.coerceIn(0, rotatedBitmap.height - guideCamPx)
+                croppedBitmap = Bitmap.createBitmap(rotatedBitmap, x, safeY, guideCamPx, guideCamPx)
                 AppLogger.debug(TAG, "Imagen recortada: ${croppedBitmap.width}x${croppedBitmap.height}")
 
                 // ── PASO 4: Clasificar ──
@@ -434,7 +459,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
         // Crear bitmap negro de targetSize×targetSize
         val output = createBitmap(targetSize, targetSize)
         val canvas = Canvas(output)
-        canvas.drawColor(Color.BLACK)
+        canvas.drawColor(Color.rgb(113, 127, 95))
 
         // Centrar la imagen escalada
         val offsetX = (targetSize - scaledW) / 2f
