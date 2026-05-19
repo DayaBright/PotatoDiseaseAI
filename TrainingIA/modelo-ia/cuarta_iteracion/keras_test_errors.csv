@@ -1,0 +1,80 @@
+﻿filename,path,true_label,pred_label,confidence,correct
+IMG_0274.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_0274.JPG,early_blight,mosaic_virus,0.9973172545433044,False
+3d8e1f90-be34-4da7-b124-a98eddb346d1___RS_Erly.B 7414.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/z_no_potato/3d8e1f90-be34-4da7-b124-a98eddb346d1___RS_Erly.B 7414.JPG,z_no_potato,late_blight,0.9963549971580505,False
+1692334247335.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/pest/1692334247335.jpg,pest,mosaic_virus,0.9913126230239868,False
+IMG_20230816_075617.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/late_blight/IMG_20230816_075617.jpg,late_blight,pest,0.9870376586914062,False
+67522.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/67522.jpg,early_blight,late_blight,0.978664219379425,False
+20230712_154041_aug0.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/pest/20230712_154041_aug0.jpg,pest,mosaic_virus,0.9752540588378906,False
+68966.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/late_blight/68966.jpg,late_blight,z_no_potato,0.970431387424469,False
+IMG_9382.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_9382.JPG,early_blight,late_blight,0.9698953032493591,False
+69255.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/late_blight/69255.jpg,late_blight,z_no_potato,0.9690601229667664,False
+IMG_20230816_091248 (1).jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_20230816_091248 (1).jpg,early_blight,pest,0.9657998085021973,False
+IMG_4704.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/late_blight/IMG_4704.JPG,late_blight,mosaic_virus,0.9638025760650635,False
+20230712_154637.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/20230712_154637.jpg,early_blight,late_blight,0.9529358148574829,False
+IMG_20230816_122017.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_20230816_122017.jpg,early_blight,pest,0.9413456916809082,False
+ae581c9f-2be2-4ca8-b27d-5a333d15012c___RS_Late.B 5170.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/z_no_potato/ae581c9f-2be2-4ca8-b27d-5a333d15012c___RS_Late.B 5170.JPG,z_no_potato,late_blight,0.9366075992584229,False
+IMG_20230816_122348.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_20230816_122348.jpg,early_blight,pest,0.9180837273597717,False
+67836.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/67836.jpg,early_blight,late_blight,0.9136850237846375,False
+20230802_110640.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/20230802_110640.jpg,early_blight,late_blight,0.909057080745697,False
+d7ba4287-1140-40e5-9c9b-d596dbab6198___RS_HL 4370.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/z_no_potato/d7ba4287-1140-40e5-9c9b-d596dbab6198___RS_HL 4370.JPG,z_no_potato,mosaic_virus,0.8998849987983704,False
+20230815_150557.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/leafroll_virus/20230815_150557.jpg,leafroll_virus,healthy,0.895668089389801,False
+b9478b81-3911-4589-b169-84c1e1971906___RS_Late.B 5579.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/z_no_potato/b9478b81-3911-4589-b169-84c1e1971906___RS_Late.B 5579.JPG,z_no_potato,late_blight,0.881086528301239,False
+1692334247688.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/1692334247688.jpg,early_blight,pest,0.842626690864563,False
+IMG_1256.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/pest/IMG_1256.JPG,pest,mosaic_virus,0.8384899497032166,False
+1692334247801.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/1692334247801.jpg,early_blight,pest,0.8360934853553772,False
+98060.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/98060.jpg,early_blight,mosaic_virus,0.8261411786079407,False
+68916.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/late_blight/68916.jpg,late_blight,healthy,0.8145275115966797,False
+IMG_20230816_115540.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_20230816_115540.jpg,early_blight,pest,0.8105034828186035,False
+20230816_122510.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/20230816_122510.jpg,early_blight,pest,0.8097697496414185,False
+97212.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/97212.jpg,early_blight,healthy,0.8053699135780334,False
+IMG_0272.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_0272.JPG,early_blight,pest,0.7782714366912842,False
+68865.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/late_blight/68865.jpg,late_blight,healthy,0.7780584692955017,False
+IMG_0819.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/leafroll_virus/IMG_0819.JPG,leafroll_virus,mosaic_virus,0.767401397228241,False
+1692334247349.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/1692334247349.jpg,early_blight,pest,0.7633751630783081,False
+68880.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/late_blight/68880.jpg,late_blight,healthy,0.7416506409645081,False
+IMG_20230815_112811~2.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_20230815_112811~2.jpg,early_blight,pest,0.7409049272537231,False
+IMG_9450.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_9450.JPG,early_blight,pest,0.723673939704895,False
+96810.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/96810.jpg,early_blight,late_blight,0.7164125442504883,False
+IMG_20230816_113939~2.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_20230816_113939~2.jpg,early_blight,pest,0.7146162986755371,False
+98116.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/98116.jpg,early_blight,late_blight,0.7108156681060791,False
+IMG_20210811_122111.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/healthy/IMG_20210811_122111.jpg,healthy,mosaic_virus,0.6995779275894165,False
+IMG_0338.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/leafroll_virus/IMG_0338.JPG,leafroll_virus,late_blight,0.6886247396469116,False
+IMG_0245.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/late_blight/IMG_0245.JPG,late_blight,mosaic_virus,0.6848095655441284,False
+late blight (147).JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/late_blight/late blight (147).JPG,late_blight,healthy,0.6819465160369873,False
+IMG_0294.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_0294.JPG,early_blight,pest,0.6816160678863525,False
+1692338650582.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/pest/1692338650582.jpg,pest,healthy,0.6802886128425598,False
+20230815_113141.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/20230815_113141.jpg,early_blight,healthy,0.6627690196037292,False
+IMG_20230816_113726.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_20230816_113726.jpg,early_blight,pest,0.6319161653518677,False
+20230922_154044.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/healthy/20230922_154044.jpg,healthy,pest,0.6271966099739075,False
+IMG_20230816_114422.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_20230816_114422.jpg,early_blight,pest,0.6233481168746948,False
+IMG_0868.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_0868.JPG,early_blight,pest,0.6205903887748718,False
+IMG_0285.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_0285.JPG,early_blight,pest,0.6152898669242859,False
+IMG_8327.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/pest/IMG_8327.JPG,pest,late_blight,0.6079467535018921,False
+a2b13360-65ce-4302-8bec-50bdc1b9789d___RS_Erly.B 9446.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/z_no_potato/a2b13360-65ce-4302-8bec-50bdc1b9789d___RS_Erly.B 9446.JPG,z_no_potato,late_blight,0.6006913781166077,False
+teb0bd357fe-1e54-4c65-979c-e894e0b8a3aa___RS_Erly.B 8328 (44).JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/z_no_potato/teb0bd357fe-1e54-4c65-979c-e894e0b8a3aa___RS_Erly.B 8328 (44).JPG,z_no_potato,late_blight,0.6006913781166077,False
+20230712_144035.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/pest/20230712_144035.jpg,pest,late_blight,0.5997872352600098,False
+20230802_105912793.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/20230802_105912793.jpg,early_blight,pest,0.5864235162734985,False
+20230816_123055.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/leafroll_virus/20230816_123055.jpg,leafroll_virus,pest,0.5785112380981445,False
+97680.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/97680.jpg,early_blight,late_blight,0.5618788599967957,False
+IMG_8197.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_8197.JPG,early_blight,mosaic_virus,0.5571698546409607,False
+IMG_9387.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/pest/IMG_9387.JPG,pest,early_blight,0.5517126321792603,False
+20230815_112620.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/leafroll_virus/20230815_112620.jpg,leafroll_virus,healthy,0.5482059717178345,False
+96557.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/96557.jpg,early_blight,healthy,0.5481978058815002,False
+69496.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/healthy/69496.jpg,healthy,z_no_potato,0.5459678769111633,False
+1692335403778.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/1692335403778.jpg,early_blight,pest,0.5447192192077637,False
+97755.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/97755.jpg,early_blight,healthy,0.5247257351875305,False
+97606.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/97606.jpg,early_blight,late_blight,0.5244102478027344,False
+97507.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/97507.jpg,early_blight,late_blight,0.5167297720909119,False
+20230712_132924.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/pest/20230712_132924.jpg,pest,mosaic_virus,0.5135453939437866,False
+20230802_111657.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/20230802_111657.jpg,early_blight,late_blight,0.5123720765113831,False
+IMG_9422.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_9422.JPG,early_blight,pest,0.4862276017665863,False
+20230712_154044.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/pest/20230712_154044.jpg,pest,nematode,0.45278313755989075,False
+IMG_20230815_113656~2.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_20230815_113656~2.jpg,early_blight,healthy,0.4492984712123871,False
+IMG_0282.JPG,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_0282.JPG,early_blight,late_blight,0.43806612491607666,False
+1692338650304.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/pest/1692338650304.jpg,pest,mosaic_virus,0.4341108500957489,False
+97161.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/97161.jpg,early_blight,late_blight,0.4338834881782532,False
+20230815_121437.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/late_blight/20230815_121437.jpg,late_blight,pest,0.42533040046691895,False
+20230712_144143.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/late_blight/20230712_144143.jpg,late_blight,pest,0.4197487533092499,False
+IMG_20230815_112322.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/IMG_20230815_112322.jpg,early_blight,mosaic_virus,0.3929431140422821,False
+plant pests (147).jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/pest/plant pests (147).jpg,pest,mosaic_virus,0.37629470229148865,False
+97891.jpg,/kaggle/input/datasets/kevinvichicela/datasert-ruido/early_blight/97891.jpg,early_blight,mosaic_virus,0.3735559284687042,False
