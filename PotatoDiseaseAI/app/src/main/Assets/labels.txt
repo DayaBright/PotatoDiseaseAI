@@ -5,3 +5,4 @@ leafroll_virus
 mosaic_virus
 nematode
 pest
+z_no_potato

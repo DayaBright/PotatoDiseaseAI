@@ -125,8 +125,11 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 val result = localClassifier.classify(croppedBitmap)
                 
                 if (result.error == null && result.label.isNotBlank()) {
-                    val isLowConfidence = result.confidence < 0.70f
+                    // El LabelNormalizer convierte "z_no_potato" → "z no potato" (reemplaza _ por espacios)
+                    // Por eso la comparación debe hacerse DESPUÉS de normalizar
                     val normalizedLabel = com.tesis.potatodiseaseai.utils.LabelNormalizer.normalize(result.label)
+                    val isNoPotatoClass = normalizedLabel == "z no potato"
+                    val isLowConfidence = result.confidence < 0.70f || isNoPotatoClass
                     val translatedName = diseaseNamesMap[normalizedLabel] ?: result.label
                     _uiState.value = _uiState.value.copy(
                         liveClassification = if (isLowConfidence) null else translatedName,
@@ -144,7 +147,10 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    private var lastLiveLowConfidence = false
+
     fun startCapture() {
+        lastLiveLowConfidence = _uiState.value.isLiveLowConfidence
         _uiState.value = _uiState.value.copy(isCapturing = true, error = null)
     }
 
@@ -240,7 +246,11 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                     throw Exception(result.error?.message ?: "Clasificación fallida")
                 }
 
-                val isLowConfidence = result.confidence < 0.70f
+                // El LabelNormalizer ya normalizó el label: "z_no_potato" → "z no potato"
+                val isNoPotatoClass = result.label == "z no potato"
+                // Si en vivo decía "No se detecta hoja", forzamos que la captura también lo sea
+                // para evitar que el modelo asigne una enfermedad errónea por el cambio de resolución.
+                val isLowConfidence = lastLiveLowConfidence || result.confidence < 0.70f || isNoPotatoClass
 
                 val savedUri: Uri
                 val detectionId: Long?
@@ -277,10 +287,11 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 }
 
                 // ── PASO 7: Actualizar UI ──
+                // Usamos "z no potato" (normalizado) para que ResultScreen lo detecte correctamente
                 _uiState.value = _uiState.value.copy(
                     lastPhotoUri = savedUri,
-                    classification = result.label,
-                    confidence = result.confidence,
+                    classification = if (isLowConfidence) "z no potato" else result.label,
+                    confidence = if (isLowConfidence) 0f else result.confidence,
                     isClassifying = false,
                     shouldNavigateToResult = true,
                     savedDetectionId = detectionId,
@@ -383,7 +394,9 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                     throw Exception(result.error?.message ?: "Clasificación fallida")
                 }
 
-                val isLowConfidence = result.confidence < 0.70f
+                // El LabelNormalizer ya normalizó el label: "z_no_potato" → "z no potato"
+                val isNoPotatoClass = result.label == "z no potato"
+                val isLowConfidence = result.confidence < 0.70f || isNoPotatoClass
 
                 val savedUri: Uri
                 val detectionId: Long?
@@ -416,10 +429,11 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                     )
                 }
 
+                // Usamos "z no potato" (normalizado) para que ResultScreen lo detecte correctamente
                 _uiState.value = _uiState.value.copy(
                     lastPhotoUri = savedUri,
-                    classification = result.label,
-                    confidence = result.confidence,
+                    classification = if (isLowConfidence) "z no potato" else result.label,
+                    confidence = if (isLowConfidence) 0f else result.confidence,
                     isClassifying = false,
                     shouldNavigateToResult = true,
                     savedDetectionId = detectionId,
@@ -459,7 +473,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
         // Crear bitmap negro de targetSize×targetSize
         val output = createBitmap(targetSize, targetSize)
         val canvas = Canvas(output)
-        canvas.drawColor(Color.rgb(113, 127, 95))
+        canvas.drawColor(Color.rgb(112, 122, 95))
 
         // Centrar la imagen escalada
         val offsetX = (targetSize - scaledW) / 2f

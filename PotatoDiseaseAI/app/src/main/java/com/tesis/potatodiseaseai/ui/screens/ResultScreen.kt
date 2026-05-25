@@ -63,7 +63,8 @@ fun ResultScreen(
     
     val diseaseName = enfermedad?.nombre ?: disease
     val isHealthy = disease.lowercase().contains("healthy")
-    val isLowConfidence = confidence < 0.70f
+    // Usar "z no potato" normalizado (LabelNormalizer convierte "_" → " ")
+    val isLowConfidence = confidence < 0.70f || disease == "z no potato"
     val isSaved = detectionId != null && detectionId != 0L
 
     // Listas de recomendaciones desde la BD

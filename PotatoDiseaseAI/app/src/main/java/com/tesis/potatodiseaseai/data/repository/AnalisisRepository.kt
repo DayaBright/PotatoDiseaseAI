@@ -35,12 +35,14 @@ class AnalisisRepository(private val context: Context) {
         precision: Float
     ): Long {
         val enfermedad = enfermedadDao.getByLabel(labelCnn)
-        val enfermedadId = enfermedad?.id ?: run {
-            Log.w(TAG, "⚠ Enfermedad '$labelCnn' no encontrada en BD — usando fallback id=1")
-            1L
+        if (enfermedad == null) {
+            // El label no existe en la BD de enfermedades (ej: "z no potato").
+            // NO guardar — retornar -1L como indicador de rechazo silencioso.
+            Log.w(TAG, "⚠ Label '$labelCnn' no existe en BD de enfermedades — descartado sin guardar")
+            return -1L
         }
         val analisis = AnalisisEntity(
-            enfermedadId = enfermedadId,
+            enfermedadId = enfermedad.id,
             imagenCapturada = imagenUri,
             precision = precision
         )

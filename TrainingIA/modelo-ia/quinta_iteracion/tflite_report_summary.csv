@@ -1,0 +1,8 @@
+﻿metrica,valor
+accuracy,0.9683
+macro avg precision,0.9643
+macro avg recall,0.9725
+macro avg f1-score,0.9682
+weighted avg precision,0.9688
+weighted avg recall,0.9683
+weighted avg f1-score,0.9683

@@ -1,0 +1,45 @@
+﻿filename,path,true_label,pred_label,confidence,correct
+IMG_0290.JPG,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/IMG_0290.JPG,early_blight,pest,0.9997382760047913,False
+IMG_20210811_121728.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/healthy/IMG_20210811_121728.jpg,healthy,mosaic_virus,0.998889148235321,False
+3d8e1f90-be34-4da7-b124-a98eddb346d1___RS_Erly.B 7414.JPG,/kaggle/input/datasets/kevinvichicela/potato-3/z_no_potato/3d8e1f90-be34-4da7-b124-a98eddb346d1___RS_Erly.B 7414.JPG,z_no_potato,late_blight,0.9941015839576721,False
+20230816_143423.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/20230816_143423.jpg,early_blight,pest,0.9911655783653259,False
+1692334247342.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/1692334247342.jpg,early_blight,pest,0.9898251891136169,False
+IMG_8124.JPG,/kaggle/input/datasets/kevinvichicela/potato-3/late_blight/IMG_8124.JPG,late_blight,early_blight,0.9565274715423584,False
+116100.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/late_blight/116100.jpg,late_blight,z_no_potato,0.924144983291626,False
+97098.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/97098.jpg,early_blight,late_blight,0.9045473337173462,False
+20230712_154637.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/20230712_154637.jpg,early_blight,late_blight,0.8983611464500427,False
+IMG_9423.JPG,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/IMG_9423.JPG,early_blight,late_blight,0.8854197263717651,False
+Late_Blight (676).jpg,/kaggle/input/datasets/kevinvichicela/potato-3/late_blight/Late_Blight (676).jpg,late_blight,early_blight,0.8776487112045288,False
+IMG_0355.JPG,/kaggle/input/datasets/kevinvichicela/potato-3/pest/IMG_0355.JPG,pest,late_blight,0.8403480648994446,False
+20230712_160344.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/late_blight/20230712_160344.jpg,late_blight,nematode,0.8285419940948486,False
+96909.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/96909.jpg,early_blight,late_blight,0.8032383322715759,False
+Late_Blight (702).jpg,/kaggle/input/datasets/kevinvichicela/potato-3/late_blight/Late_Blight (702).jpg,late_blight,early_blight,0.7773051261901855,False
+20230712_145457.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/pest/20230712_145457.jpg,pest,early_blight,0.7690368890762329,False
+Healthy (4).JPG,/kaggle/input/datasets/kevinvichicela/potato-3/healthy/Healthy (4).JPG,healthy,z_no_potato,0.7431623935699463,False
+IMG_20230816_122017.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/IMG_20230816_122017.jpg,early_blight,pest,0.7378121614456177,False
+IMG_20230816_115039.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/IMG_20230816_115039.jpg,early_blight,pest,0.7333424091339111,False
+IMG_4729.JPG,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/IMG_4729.JPG,early_blight,late_blight,0.7289855480194092,False
+20230815_113141.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/20230815_113141.jpg,early_blight,healthy,0.703758180141449,False
+97959.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/97959.jpg,early_blight,late_blight,0.6794559359550476,False
+IMG_0255.JPG,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/IMG_0255.JPG,early_blight,pest,0.6763960719108582,False
+96816.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/96816.jpg,early_blight,late_blight,0.6719372868537903,False
+IMG_20230816_135810~2.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/pest/IMG_20230816_135810~2.jpg,pest,early_blight,0.6691905856132507,False
+20230802_105056702.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/pest/20230802_105056702.jpg,pest,early_blight,0.6523075103759766,False
+98070.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/98070.jpg,early_blight,late_blight,0.630917489528656,False
+IMG_20210811_122111.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/healthy/IMG_20210811_122111.jpg,healthy,mosaic_virus,0.6276084780693054,False
+IMG_8140.JPG,/kaggle/input/datasets/kevinvichicela/potato-3/late_blight/IMG_8140.JPG,late_blight,early_blight,0.6156700253486633,False
+20230712_122415.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/20230712_122415.jpg,early_blight,pest,0.5831732749938965,False
+20230802_124636.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/late_blight/20230802_124636.jpg,late_blight,pest,0.5814748406410217,False
+68683.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/late_blight/68683.jpg,late_blight,z_no_potato,0.5794219374656677,False
+873aa4b3-61f8-473a-8fd3-b39ede9376c4___RS_Late.B 4829.JPG,/kaggle/input/datasets/kevinvichicela/potato-3/z_no_potato/873aa4b3-61f8-473a-8fd3-b39ede9376c4___RS_Late.B 4829.JPG,z_no_potato,late_blight,0.5762897729873657,False
+68880.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/late_blight/68880.jpg,late_blight,healthy,0.5631049275398254,False
+IMG_20210811_121743.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/healthy/IMG_20210811_121743.jpg,healthy,mosaic_virus,0.5412492156028748,False
+IMG_4665.JPG,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/IMG_4665.JPG,early_blight,pest,0.5295236706733704,False
+20230816_122426.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/20230816_122426.jpg,early_blight,pest,0.5141779184341431,False
+IMG_0194.JPG,/kaggle/input/datasets/kevinvichicela/potato-3/nematode/IMG_0194.JPG,nematode,mosaic_virus,0.5104491114616394,False
+20230802_124148.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/late_blight/20230802_124148.jpg,late_blight,pest,0.5057522058486938,False
+20230816_115745.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/healthy/20230816_115745.jpg,healthy,early_blight,0.5056490898132324,False
+20230712_120436.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/late_blight/20230712_120436.jpg,late_blight,pest,0.4555072486400604,False
+Healthy (76).JPG,/kaggle/input/datasets/kevinvichicela/potato-3/healthy/Healthy (76).JPG,healthy,late_blight,0.4536205232143402,False
+20230802_120059781.jpg,/kaggle/input/datasets/kevinvichicela/potato-3/pest/20230802_120059781.jpg,pest,healthy,0.4524284601211548,False
+IMG_0219.JPG,/kaggle/input/datasets/kevinvichicela/potato-3/early_blight/IMG_0219.JPG,early_blight,pest,0.4128589928150177,False

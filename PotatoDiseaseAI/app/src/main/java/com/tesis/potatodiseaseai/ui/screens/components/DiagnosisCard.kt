@@ -24,7 +24,8 @@ fun DiagnosisCard(
     isHealthy: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val isLowConfidence = confidence < 0.70f
+    // Usar "z no potato" normalizado (LabelNormalizer convierte "_" → " ")
+    val isLowConfidence = confidence < 0.70f || diseaseName == "z no potato"
 
     val containerColor = when {
         isLowConfidence -> AppTheme.colors.lowConfidenceContainer

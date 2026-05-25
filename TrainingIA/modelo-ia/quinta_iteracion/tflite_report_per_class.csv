@@ -1,0 +1,9 @@
+﻿clase,precision,recall,f1-score,support
+early_blight,0.9837,0.9484,0.9658,446
+healthy,0.963,0.9559,0.9594,136
+late_blight,0.9611,0.9817,0.9713,327
+leafroll_virus,1.0,1.0,1.0,90
+mosaic_virus,0.934,1.0,0.9659,99
+nematode,0.9844,0.9844,0.9844,64
+pest,0.9027,0.9189,0.9107,111
+z_no_potato,0.9858,0.9905,0.9882,211

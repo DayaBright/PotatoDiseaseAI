@@ -15,7 +15,7 @@
     <string name="scanner_error_resources">Recursos no disponibles</string>
     <string name="scanner_error_save">Error al guardar imagen</string>
     <string name="scanner_guide_text">Centra la hoja dentro del recuadro</string>
-    <string name="scanner_focus_properly">Enfoque adecuadamente</string>
+    <string name="scanner_focus_properly">No se detecta hoja</string>
     <string name="scanner_guide_text_capture">Para mayor detalle capture la foto</string>
     
     <!-- History Screen -->
@@ -43,7 +43,7 @@
     <string name="result_prevention_title">Prevención</string>
     <string name="result_chemical_control_title">Control Químico</string>
     <string name="result_biological_control_title">Control Biológico</string>
-    <string name="result_low_confidence_title">Confianza baja</string>
+    <string name="result_low_confidence_title">No se detecta hoja</string>
     <string name="result_low_confidence_description">La precisión del análisis es menor al 70%. Para obtener un diagnóstico más confiable, intenta tomar una nueva foto siguiendo estos consejos:</string>
     <string name="result_low_confidence_tips_title">Consejos para una mejor foto</string>
     <string name="result_tip_clean_camera">Limpia el lente de la cámara antes de tomar la foto</string>
