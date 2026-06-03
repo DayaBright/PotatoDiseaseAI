@@ -1,5 +1,6 @@
 package com.tesis.potatodiseaseai.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,6 +26,7 @@ import com.tesis.potatodiseaseai.ui.screens.components.CachedImage
 import com.tesis.potatodiseaseai.ui.theme.Dimensions
 import com.tesis.potatodiseaseai.utils.DateUtils
 
+@SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
@@ -223,6 +225,7 @@ fun HistoryScreen(
     }
 }
 
+@SuppressLint("DefaultLocale")
 @Composable
 private fun AnalisisCard(
     item: AnalisisConEnfermedad,
@@ -230,6 +233,7 @@ private fun AnalisisCard(
     onDelete: () -> Unit
 ) {
     val isHealthy = item.enfermedad.labelCnn.lowercase().contains("healthy")
+    val isLowConfidence = item.analisis.precision < 0.70f || item.enfermedad.labelCnn == "z no potato"
 
     Card(
         modifier = Modifier
@@ -266,10 +270,19 @@ private fun AnalisisCard(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = stringResource(
-                                R.string.history_confidence,
-                                String.format("%.1f", item.analisis.precision * 100)
-                            ),
+                            text = if (isLowConfidence) {
+                                val isNoPotato = item.enfermedad.labelCnn == "z no potato" || item.enfermedad.labelCnn == "z_no_potato"
+                                if (isNoPotato && item.analisis.precision >= 0.70f) {
+                                    stringResource(R.string.history_confidence, "<70")
+                                } else {
+                                    stringResource(R.string.history_confidence, "< 70")
+                                }
+                            } else {
+                                stringResource(
+                                    R.string.history_confidence,
+                                    String.format("%.1f", item.analisis.precision * 100)
+                                )
+                            },
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

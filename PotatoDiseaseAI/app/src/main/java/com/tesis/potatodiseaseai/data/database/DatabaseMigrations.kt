@@ -168,6 +168,18 @@ object DatabaseMigrations {
     }
 
     /**
+     * Migración v5 → v6.
+     * Actualiza el nombre de la patología 'mosaic virus' a 'Mosaico Viral (PVY)'.
+     */
+    val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "UPDATE `enfermedades` SET nombre = 'Mosaico Viral (PVY)' WHERE labelCnn = 'mosaic virus'"
+            )
+        }
+    }
+
+    /**
      * Actualiza los registros de enfermedades con la información verificada
      * por reportes académicos (v4 y v5).
      */
@@ -317,7 +329,7 @@ object DatabaseMigrations {
         buildVerifiedUpdates()[0].let { arrayOf(it[10], "Tizón Tardío o Lancha", it[0], it[1], it[2], it[3], it[4], it[5], it[6], it[7], it[8], "lateblight_normal", "lateblight_gradcam", it[9]) },
         buildVerifiedUpdates()[1].let { arrayOf(it[10], "Tizón Temprano", it[0], it[1], it[2], it[3], it[4], it[5], it[6], it[7], it[8], "earlyblight_normal", "earlyblight_gradcam", it[9]) },
         buildVerifiedUpdates()[5].let { arrayOf(it[10], "Virus del Enrollamiento de la Hoja (PLRV)", it[0], it[1], it[2], it[3], it[4], it[5], it[6], it[7], it[8], "leafroll_normal", "leafroll_gradcam", it[9]) },
-        buildVerifiedUpdates()[6].let { arrayOf(it[10], "Mosaico Viral (PVY/PVX)", it[0], it[1], it[2], it[3], it[4], it[5], it[6], it[7], it[8], "mosaic_normal", "mosaic_gradcam", it[9]) },
+        buildVerifiedUpdates()[6].let { arrayOf(it[10], "Mosaico Viral (PVY)", it[0], it[1], it[2], it[3], it[4], it[5], it[6], it[7], it[8], "mosaic_normal", "mosaic_gradcam", it[9]) },
         buildVerifiedUpdates()[4].let { arrayOf(it[10], "Nematodo del Quiste de la Papa (NQP)", it[0], it[1], it[2], it[3], it[4], it[5], it[6], it[7], it[8], "nematode_normal", "nematode_gradacam", it[9]) },
         buildVerifiedUpdates()[3].let { arrayOf(it[10], "Daño por Plagas", it[0], it[1], it[2], it[3], it[4], it[5], it[6], it[7], it[8], "pest_normal", "pest_gradcam", it[9]) },
         buildVerifiedUpdates()[2].let { arrayOf(it[10], "Planta Sana", it[0], it[1], it[2], it[3], it[4], it[5], it[6], it[7], it[8], "healthy_normal", "", it[9]) }
@@ -344,7 +356,7 @@ object DatabaseMigrations {
                 "Enrollamiento hacia arriba de los folíolos.", "Hojas con textura rígida.",
                 "Control de áfidos|Uso de semilla certificada",
                 "", "", "INIAP Ecuador"),
-            arrayOf("mosaic virus", "Mosaico Viral (PVY/PVX)", "Potato virus Y (PVY)",
+            arrayOf("mosaic virus", "Mosaico Viral (PVY)", "Potato virus Y (PVY)",
                 "Pérdidas del 20% al 80%.", "Patrón mosaico.", "Superficie rugosa.",
                 "Desinfección de herramientas|Eliminar plantas enfermas|Controlar áfidos",
                 "", "", "INIAP Ecuador"),

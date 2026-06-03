@@ -291,7 +291,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.value = _uiState.value.copy(
                     lastPhotoUri = savedUri,
                     classification = if (isLowConfidence) "z no potato" else result.label,
-                    confidence = if (isLowConfidence) 0f else result.confidence,
+                    confidence = if (isNoPotatoClass) result.confidence else if (isLowConfidence) 0f else result.confidence,
                     isClassifying = false,
                     shouldNavigateToResult = true,
                     savedDetectionId = detectionId,
@@ -433,7 +433,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.value = _uiState.value.copy(
                     lastPhotoUri = savedUri,
                     classification = if (isLowConfidence) "z no potato" else result.label,
-                    confidence = if (isLowConfidence) 0f else result.confidence,
+                    confidence = if (isNoPotatoClass) result.confidence else if (isLowConfidence) 0f else result.confidence,
                     isClassifying = false,
                     shouldNavigateToResult = true,
                     savedDetectionId = detectionId,

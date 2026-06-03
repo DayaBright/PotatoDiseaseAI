@@ -82,10 +82,19 @@ fun DiagnosisCard(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = stringResource(
-                        R.string.result_confidence,
-                        String.format("%.1f", confidence * 100)
-                    ),
+                    text = if (isLowConfidence) {
+                        val isNoPotato = diseaseName == "z no potato" || diseaseName == "z_no_potato"
+                        if (isNoPotato && confidence >= 0.70f) {
+                            stringResource(R.string.result_confidence, "<70")
+                        } else {
+                            stringResource(R.string.result_confidence, "< 70")
+                        }
+                    } else {
+                        stringResource(
+                            R.string.result_confidence,
+                            String.format("%.1f", confidence * 100)
+                        )
+                    },
                     style = MaterialTheme.typography.bodyLarge
                 )
             }

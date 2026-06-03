@@ -35,7 +35,8 @@ abstract class AppDatabase : RoomDatabase() {
                         DatabaseMigrations.MIGRATION_1_2,
                         DatabaseMigrations.MIGRATION_2_3,
                         DatabaseMigrations.MIGRATION_3_4,
-                        DatabaseMigrations.MIGRATION_4_5
+                        DatabaseMigrations.MIGRATION_4_5,
+                        DatabaseMigrations.MIGRATION_5_6
                     )
                     // Insertar datos semilla en instalaciones totalmente nuevas
                     .addCallback(object : RoomDatabase.Callback() {

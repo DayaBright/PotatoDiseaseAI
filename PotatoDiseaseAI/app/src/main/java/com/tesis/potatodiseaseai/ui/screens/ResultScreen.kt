@@ -50,7 +50,7 @@ fun ResultScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var expandedDetail by remember { mutableStateOf<Pair<String, String>?>(null) }
 
-    // ── Cargar datos de la enfermedad desde Room ──
+    // Cargar datos de la enfermedad desde Room
     val db = remember { AppDatabase.getDatabase(context) }
     var enfermedad by remember { mutableStateOf<EnfermedadEntity?>(null) }
 
@@ -118,6 +118,9 @@ fun ResultScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.result_title)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.result_back))
@@ -206,7 +209,7 @@ fun ResultScreen(
                     }
                 }
             } else {
-                // ── Confianza suficiente: mostrar recomendaciones desde BD ──
+                //  Confianza suficiente: mostrar recomendaciones desde BD 
 
                 // — Prevención —
                 if (prevencion.isNotEmpty()) {
