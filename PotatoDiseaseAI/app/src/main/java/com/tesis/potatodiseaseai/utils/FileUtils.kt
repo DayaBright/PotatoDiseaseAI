@@ -1,10 +1,13 @@
 package com.tesis.potatodiseaseai.utils
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
+import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
 
@@ -144,6 +147,66 @@ object FileUtils {
             }
         } catch (e: Exception) {
             AppLogger.error(TAG, "Error limpiando archivos temporales: ${e.message}", e)  // ✅ CAMBIAR
+        }
+    }
+
+    /**
+     * Copia un archivo desde la carpeta assets a la carpeta cache interna de la app.
+     * Retorna el archivo de destino, o null si ocurre un error.
+     */
+    fun copyAssetToCache(context: Context, assetName: String, destFileName: String): File? {
+        return try {
+            val destFile = File(context.cacheDir, destFileName)
+            context.assets.open(assetName).use { inputStream ->
+                FileOutputStream(destFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+            AppLogger.debug(TAG, "✓ Asset copiado exitosamente a: ${destFile.absolutePath}")
+            destFile
+        } catch (e: Exception) {
+            AppLogger.error(TAG, "Error al copiar el asset $assetName: ${e.message}", e)
+            null
+        }
+    }
+
+    /**
+     * Copia y abre el archivo PDF desde caché usando un Intent y FileProvider.
+     */
+    fun openPdfFromCache(context: Context, fileName: String) {
+        try {
+            val file = File(context.cacheDir, fileName)
+            // Siempre intentamos copiar el asset para asegurarnos de que la versión más reciente
+            // esté disponible (o si el archivo de caché fue eliminado/limpiado)
+            val copiedFile = copyAssetToCache(context, "Manual_Usuario.pdf", fileName)
+            if (copiedFile == null || !copiedFile.exists()) {
+                Toast.makeText(context, "El archivo del manual no se encuentra disponible.", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            // Generar URI seguro usando FileProvider
+            val authority = "${context.packageName}.fileprovider"
+            val uri = FileProvider.getUriForFile(context, authority, copiedFile)
+
+            // Crear intent
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/pdf")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+
+            try {
+                context.startActivity(intent)
+            } catch (e: android.content.ActivityNotFoundException) {
+                Toast.makeText(
+                    context,
+                    "No se encontró una aplicación para abrir archivos PDF. Por favor, instale un lector de PDF.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        } catch (e: Exception) {
+            AppLogger.error(TAG, "Error al abrir el PDF: ${e.message}", e)
+            Toast.makeText(context, "Error al intentar abrir el manual de usuario.", Toast.LENGTH_SHORT).show()
         }
     }
 }

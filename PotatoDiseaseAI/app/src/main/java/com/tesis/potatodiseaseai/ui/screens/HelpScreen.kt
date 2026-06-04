@@ -32,6 +32,7 @@ import com.tesis.potatodiseaseai.BuildConfig
 import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.data.database.EnfermedadEntity
 import com.tesis.potatodiseaseai.ui.theme.Dimensions
+import com.tesis.potatodiseaseai.utils.FileUtils
 import com.tesis.potatodiseaseai.utils.UpdateManager
 import kotlinx.coroutines.launch
 
@@ -60,6 +61,7 @@ fun HelpScreen(
                 CircularProgressIndicator()
             }
         } else {
+            val context = LocalContext.current
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
@@ -151,6 +153,15 @@ fun HelpScreen(
                 // ── Sección: Actualizaciones ──
                 item {
                     UpdateCard()
+                }
+
+                // ── Sección: Manual de Usuario ──
+                item {
+                    ManualUsuarioCard(
+                        onClick = {
+                            FileUtils.openPdfFromCache(context, "Manual_Usuario.pdf")
+                        }
+                    )
                 }
             }
         }
@@ -316,6 +327,61 @@ private fun HelpSection(
 private fun getDrawableResId(context: Context, name: String): Int {
     if (name.isBlank()) return 0
     return context.resources.getIdentifier(name, "drawable", context.packageName)
+}
+
+@Composable
+private fun ManualUsuarioCard(
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(Dimensions.cardElevation),
+        shape = RoundedCornerShape(Dimensions.cornerRadiusMedium),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimensions.spacingMedium),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(Dimensions.spacingSmall),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Book,
+                    contentDescription = "Manual de Usuario",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(Dimensions.iconSizeMedium)
+                )
+                Column {
+                    Text(
+                        text = "Manual de usuario",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Visualiza la guía completa en formato PDF",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    )
+                }
+            }
+            Icon(
+                imageVector = Icons.Outlined.OpenInNew,
+                contentDescription = "Abrir PDF",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(Dimensions.iconSizeSmall)
+            )
+        }
+    }
 }
 
 @Composable
