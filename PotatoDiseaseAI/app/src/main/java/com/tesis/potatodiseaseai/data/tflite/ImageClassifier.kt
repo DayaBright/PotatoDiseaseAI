@@ -21,6 +21,19 @@ class ImageClassifierHelper(context: Context) {
         context.assets.open("labels.txt").bufferedReader().use { it.readLines() }
     }.getOrDefault(emptyList())
 
+    // Variables para el cálculo del tiempo promedio
+    private var totalInferenceTimeMs = 0L
+    private var inferenceCount = 0
+
+    // Clase de datos para almacenar las métricas
+    data class PerformanceMetrics(
+        var loadTimeMs: Long = 0L,
+        var averageInferenceTimeMs: Long = 0L,
+        var memoryUsedMB: Double = 0.0
+    )
+
+    val metrics = PerformanceMetrics()
+
     data class ClassifierResult(
         val label: String,
         val confidence: Float,
@@ -28,12 +41,10 @@ class ImageClassifierHelper(context: Context) {
     )
 
     init {
+        val loadStartTime = System.nanoTime()
         try {
             val appContext = context.applicationContext
-            require(appContext === context) {
-                "Debe pasar applicationContext para evitar memory leaks"
-            }
-            
+
             val options = ImageClassifierOptions.builder()
                 .setMaxResults(1)
                 .setScoreThreshold(0.0f)
@@ -61,6 +72,13 @@ class ImageClassifierHelper(context: Context) {
             // ✅ Usar ErrorHandler para excepciones genéricas
             initError = ErrorHandler.handleException(e, "Inicializando clasificador")
             AppLogger.error(TAG, initError!!.message)
+        } finally {
+            // 3. Obtener el tiempo de carga
+            val loadEndTime = System.nanoTime()
+            metrics.loadTimeMs = (loadEndTime - loadStartTime) / 1_000_000
+            
+            AppLogger.debug(TAG, "Métricas Iniciales -> " +
+                    "Tiempo de Carga: ${metrics.loadTimeMs} ms")
         }
     }
 
@@ -116,7 +134,27 @@ class ImageClassifierHelper(context: Context) {
 
             val inferenceTimeMs = (endTime - startTime) / 1_000_000
 
-            AppLogger.debug(TAG, "INFERENCIA_TFLITE: ${inferenceTimeMs} ms")
+            // 4. Actualizar el tiempo de inferencia promedio
+            inferenceCount++
+            totalInferenceTimeMs += inferenceTimeMs
+            metrics.averageInferenceTimeMs = totalInferenceTimeMs / inferenceCount
+
+            // Mostrar métricas después de 10 inferencias
+            if (inferenceCount == 10) {
+                // 5. Obtener memoria RAM (PSS) utilizada por la app
+                val memoryInfo = android.os.Debug.MemoryInfo()
+                android.os.Debug.getMemoryInfo(memoryInfo)
+                // totalPss devuelve el tamaño en KB, lo dividimos por 1024 para MB
+                metrics.memoryUsedMB = memoryInfo.totalPss / 1024.0
+
+                AppLogger.debug(TAG, """
+                    ================ MÉTRICAS TESIS ================
+                    Tiempo de Carga: ${metrics.loadTimeMs} ms
+                    Tiempo Promedio (10 inferencias): ${metrics.averageInferenceTimeMs} ms
+                    Memoria RAM Utilizada: %.2f MB
+                    ================================================
+                """.trimIndent().format(metrics.memoryUsedMB))
+            }
 
             if (results.isEmpty() || results[0].categories.isEmpty()) {
                 val error = AppError.ClassificationError("No se detectaron resultados")
@@ -138,8 +176,6 @@ class ImageClassifierHelper(context: Context) {
             val chosen = LabelNormalizer.normalize(
                 fromDisplay ?: fromLabels ?: raw
             )
-
-            AppLogger.debug(TAG, "✓ Clasificación exitosa: $chosen (${category.score})")
             
             ClassifierResult(
                 label = chosen,

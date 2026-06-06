@@ -96,4 +96,7 @@ class AnalisisRepository(private val context: Context) {
     // ── Almacenamiento ────────────────────────────────────────────────────────
 
     fun getTotalStorageSize(): Double = FileUtils.getTotalImagesSizeInMB(context)
+
+    suspend fun getEnfermedadById(id: Long) = enfermedadDao.getById(id)
+
 }

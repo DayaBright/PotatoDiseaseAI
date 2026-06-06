@@ -210,7 +210,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 } ?: throw java.io.IOException("No se pudo decodificar la imagen")
 
                 // ── PASO 2: Corregir rotación EXIF (en memoria, sin guardar) ──
-                rotatedBitmap = fixRotationInMemory(ctx, sourceUri, rawBitmap)
+                rotatedBitmap = com.tesis.potatodiseaseai.utils.ImageUtils.fixRotationInMemory(ctx, sourceUri, rawBitmap)
 
                 // ── PASO 3: Recortar cuadrado que coincide con la guía visual ──
                 val guideFraction = 0.85f
@@ -321,34 +321,6 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /**
-     * Corrige la rotación del bitmap en memoria según EXIF.
-     */
-    private fun fixRotationInMemory(context: android.content.Context, uri: Uri, bitmap: Bitmap): Bitmap {
-        return try {
-            val exif = context.contentResolver.openInputStream(uri)?.use {
-                ExifInterface(it)
-            }
-            val orientation = exif?.getAttributeInt(
-                ExifInterface.TAG_ORIENTATION,
-                ExifInterface.ORIENTATION_UNDEFINED
-            ) ?: ExifInterface.ORIENTATION_UNDEFINED
-
-            val angle = when (orientation) {
-                ExifInterface.ORIENTATION_ROTATE_90 -> 90f
-                ExifInterface.ORIENTATION_ROTATE_180 -> 180f
-                ExifInterface.ORIENTATION_ROTATE_270 -> 270f
-                else -> return bitmap // sin rotación → devuelve el original
-            }
-
-            val matrix = Matrix().apply { postRotate(angle) }
-            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-        } catch (e: Exception) {
-            AppLogger.error(TAG, "Error leyendo EXIF: ${e.message}")
-            bitmap
-        }
-    }
-
-    /**
      * Pipeline para imágenes de galería: cargar → rotar → letterbox 224×224 → clasificar + guardar.
      * No recorta: redimensiona la imagen completa dentro de 224×224 con padding negro.
      */
@@ -378,13 +350,13 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 } ?: throw java.io.IOException("No se pudo decodificar la imagen")
 
                 // ── PASO 2: Corregir rotación EXIF ──
-                rotatedBitmap = fixRotationInMemory(ctx, sourceUri, rawBitmap)
+                rotatedBitmap = com.tesis.potatodiseaseai.utils.ImageUtils.fixRotationInMemory(ctx, sourceUri, rawBitmap)
 
                 // ── PASO 3: Letterbox a un tamaño adecuado para la UI (sin recorte, sin distorsión) ──
                 // Usamos un tamaño mayor para evitar que la imagen se vea borrosa en la pantalla de resultados.
                 // ImageClassifierHelper redimensionará internamente la imagen al tamaño requerido por el modelo.
                 val targetSize = maxOf(rotatedBitmap.width, rotatedBitmap.height).coerceAtMost(1024)
-                letterboxedBitmap = letterboxBitmap(rotatedBitmap, targetSize)
+                letterboxedBitmap = com.tesis.potatodiseaseai.utils.ImageUtils.letterboxBitmap(rotatedBitmap, targetSize)
                 AppLogger.debug(TAG, "Imagen letterbox: ${letterboxedBitmap.width}x${letterboxedBitmap.height} (original: ${rotatedBitmap.width}x${rotatedBitmap.height})")
 
                 // ── PASO 4: Clasificar ──
@@ -451,40 +423,6 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 rawBitmap?.recycle()
             }
         }
-    }
-
-    /**
-     * Redimensiona un bitmap para que quepa dentro de un cuadrado de [targetSize]×[targetSize]
-     * manteniendo la proporción original, y rellena los bordes vacíos con negro.
-     *
-     * Ejemplo: una imagen 640×480 se escala a 224×168 y se centra en un canvas 224×224
-     * con 28px de padding negro arriba y abajo.
-     */
-    private fun letterboxBitmap(source: Bitmap, targetSize: Int): Bitmap {
-        val srcW = source.width.toFloat()
-        val srcH = source.height.toFloat()
-
-        // Factor de escala para que el lado mayor quepa en targetSize
-        val scale = targetSize.toFloat() / maxOf(srcW, srcH)
-
-        val scaledW = (srcW * scale).toInt()
-        val scaledH = (srcH * scale).toInt()
-
-        // Crear bitmap negro de targetSize×targetSize
-        val output = createBitmap(targetSize, targetSize)
-        val canvas = Canvas(output)
-        canvas.drawColor(Color.rgb(112, 122, 95))
-
-        // Centrar la imagen escalada
-        val offsetX = (targetSize - scaledW) / 2f
-        val offsetY = (targetSize - scaledH) / 2f
-
-        val scaledBitmap = source.scale(scaledW, scaledH)
-        canvas.drawBitmap(scaledBitmap, offsetX, offsetY, Paint(Paint.FILTER_BITMAP_FLAG))
-
-        if (scaledBitmap !== source) scaledBitmap.recycle()
-
-        return output
     }
 
     fun onNavigatedToResult() {

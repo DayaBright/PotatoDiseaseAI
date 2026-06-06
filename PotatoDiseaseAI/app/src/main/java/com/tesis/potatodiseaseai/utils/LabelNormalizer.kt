@@ -4,7 +4,6 @@ object LabelNormalizer {
     
     /**
      * Normaliza un label de enfermedad
-     * Ejemplo: "Potato___Early_Blight" → "early blight"
      */
     fun normalize(label: String): String {
         return label

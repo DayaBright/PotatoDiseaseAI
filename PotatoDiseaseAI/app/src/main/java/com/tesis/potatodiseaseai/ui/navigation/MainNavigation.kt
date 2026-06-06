@@ -135,14 +135,11 @@ fun MainNavigation() {
                 )
             ) { backStackEntry ->
                 val enfermedadId = backStackEntry.arguments?.getLong(NavigationHelper.Args.ENFERMEDAD_ID) ?: 0L
-                val detailContext = LocalContext.current
-                val db = remember { com.tesis.potatodiseaseai.data.database.AppDatabase.getDatabase(detailContext) }
-                var enfermedad by remember { mutableStateOf<com.tesis.potatodiseaseai.data.database.EnfermedadEntity?>(null) }
+                val vm: com.tesis.potatodiseaseai.ui.screens.DiseaseDetailViewModel = viewModel()
+                val enfermedad by vm.enfermedad.collectAsState()
                 
                 LaunchedEffect(enfermedadId) {
-                    enfermedad = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                        db.enfermedadDao().getById(enfermedadId)
-                    }
+                    vm.loadEnfermedad(enfermedadId)
                 }
                 
                 enfermedad?.let { enf ->

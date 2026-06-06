@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.net.Uri
+import androidx.core.graphics.scale
 import androidx.exifinterface.media.ExifInterface
 import java.io.File
 import java.io.FileOutputStream
@@ -106,14 +107,73 @@ object ImageUtils {
 
     /**
      * Recorta un cuadrado centrado del bitmap.
-     * Esto coincide con el cuadro guía que se muestra en la cámara,
-     * asegurando que solo el área enmarcada por el usuario se envíe al clasificador.
-     * @param fraction Fracción del lado menor a usar (0.0-1.0). Por defecto 0.85 (85%).
+     * Esto coincide con el cuadro guía que se muestra en la cámara.
      */
     fun centerCropSquare(source: Bitmap, fraction: Float = 0.85f): Bitmap {
         val side = (minOf(source.width, source.height) * fraction.coerceIn(0.1f, 1.0f)).toInt()
         val x = (source.width - side) / 2
         val y = (source.height - side) / 2
         return Bitmap.createBitmap(source, x, y, side, side)
+    }
+
+    /**
+     * Corrige la rotación del bitmap en memoria según EXIF sin guardar en disco.
+     */
+    fun fixRotationInMemory(context: Context, uri: Uri, bitmap: Bitmap): Bitmap {
+        return try {
+            val exif = context.contentResolver.openInputStream(uri)?.use {
+                ExifInterface(it)
+            }
+            val orientation = exif?.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_UNDEFINED
+            ) ?: ExifInterface.ORIENTATION_UNDEFINED
+
+            val angle = when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+                ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+                ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+                else -> return bitmap // sin rotación → devuelve el original
+            }
+
+            rotateBitmap(bitmap, angle)
+        } catch (e: Exception) {
+            AppLogger.error(TAG, "Error leyendo EXIF: ${e.message}")
+            bitmap
+        }
+    }
+
+    /**
+     * Redimensiona un bitmap para que quepa dentro de un cuadrado de [targetSize]×[targetSize]
+     * manteniendo la proporción original, y rellena los bordes vacíos con negro.
+     * 
+     * Ejemplo: una imagen 640×480 se escala a 224×168 y se centra en un canvas 224×224
+     * con 28px de padding negro arriba y abajo.
+     */
+    fun letterboxBitmap(source: Bitmap, targetSize: Int): Bitmap {
+        val srcW = source.width.toFloat()
+        val srcH = source.height.toFloat()
+
+        // Factor de escala para que el lado mayor quepa en targetSize
+        val scale = targetSize.toFloat() / maxOf(srcW, srcH)
+
+        val scaledW = (srcW * scale).toInt()
+        val scaledH = (srcH * scale).toInt()
+
+        // Crear bitmap negro de targetSize×targetSize
+        val output = Bitmap.createBitmap(targetSize, targetSize, Bitmap.Config.ARGB_8888)
+        val canvas = android.graphics.Canvas(output)
+        canvas.drawColor(android.graphics.Color.rgb(112, 122, 95))
+
+        // Centrar la imagen escalada
+        val offsetX = (targetSize - scaledW) / 2f
+        val offsetY = (targetSize - scaledH) / 2f
+
+        val scaledBitmap = source.scale(scaledW, scaledH)
+        canvas.drawBitmap(scaledBitmap, offsetX, offsetY, android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG))
+
+        if (scaledBitmap !== source) scaledBitmap.recycle()
+
+        return output
     }
 }

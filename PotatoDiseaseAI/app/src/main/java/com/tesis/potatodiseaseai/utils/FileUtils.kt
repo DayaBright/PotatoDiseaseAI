@@ -67,7 +67,6 @@ object FileUtils {
             AppLogger.error(TAG, "Error guardando imagen: ${e.message}", e)  // ✅ CAMBIAR
             null
         } finally {
-            // ✅ CRÍTICO: Reciclar bitmap
             bitmap?.recycle()
         }
     }
@@ -152,7 +151,6 @@ object FileUtils {
 
     /**
      * Copia un archivo desde la carpeta assets a la carpeta cache interna de la app.
-     * Retorna el archivo de destino, o null si ocurre un error.
      */
     fun copyAssetToCache(context: Context, assetName: String, destFileName: String): File? {
         return try {
@@ -176,8 +174,7 @@ object FileUtils {
     fun openPdfFromCache(context: Context, fileName: String) {
         try {
             val file = File(context.cacheDir, fileName)
-            // Siempre intentamos copiar el asset para asegurarnos de que la versión más reciente
-            // esté disponible (o si el archivo de caché fue eliminado/limpiado)
+
             val copiedFile = copyAssetToCache(context, "Manual_Usuario.pdf", fileName)
             if (copiedFile == null || !copiedFile.exists()) {
                 Toast.makeText(context, "El archivo del manual no se encuentra disponible.", Toast.LENGTH_SHORT).show()

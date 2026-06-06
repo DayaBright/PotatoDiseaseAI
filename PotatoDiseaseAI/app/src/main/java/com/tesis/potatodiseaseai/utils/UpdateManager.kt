@@ -44,8 +44,6 @@ class UpdateManager(private val context: Context) {
 
     /**
      * Comprueba la última versión en GitHub Releases.
-     * Retorna un par (Versión, URL de descarga) si hay una actualización,
-     * o null si estamos en la última versión o hay error.
      */
     suspend fun checkForUpdates(): Pair<String, String>? = withContext(Dispatchers.IO) {
         try {
