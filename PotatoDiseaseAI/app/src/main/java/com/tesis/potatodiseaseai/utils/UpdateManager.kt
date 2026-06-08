@@ -32,14 +32,23 @@ class UpdateManager(private val context: Context) {
     private val apiUrl = "https://api.github.com/repos/Kevin17Vichi/PotatoDiseaseAI/releases/latest"
 
     /**
-     * Verifica si el dispositivo está conectado a Wi-Fi
+     * Verifica si el dispositivo está conectado a Wi-Fi (Compatible desde API 21)
      */
-    @RequiresApi(Build.VERSION_CODES.M)
     fun isConnectedToWifi(): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork ?: return false
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Código moderno para API 23 o superior
+            val network = connectivityManager.activeNetwork ?: return false
+            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+        } else {
+            // Código clásico/legacy para API 21 y 22
+            @Suppress("DEPRECATION")
+            val networkInfo = connectivityManager.activeNetworkInfo
+            @Suppress("DEPRECATION")
+            networkInfo != null && networkInfo.isConnected && networkInfo.type == ConnectivityManager.TYPE_WIFI
+        }
     }
 
     /**

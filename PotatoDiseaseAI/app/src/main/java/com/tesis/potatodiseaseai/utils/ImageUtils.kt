@@ -106,8 +106,58 @@ object ImageUtils {
     }
 
     /**
-     * Recorta un cuadrado centrado del bitmap.
-     * Esto coincide con el cuadro guía que se muestra en la cámara.
+     * Recorta un cuadrado de la imagen mapeando las coordenadas del recuadro
+     * visual (que tiene un offset y un tamaño relativo a la pantalla) a las
+     * coordenadas reales de la imagen, asumiendo un escalado FILL_CENTER.
+     */
+    fun cropToPreviewSquare(
+        source: Bitmap,
+        screenWidth: Int,
+        screenHeight: Int,
+        guideFraction: Float = 0.85f,
+        verticalOffsetDp: Float = 60f,
+        density: Float
+    ): Bitmap {
+        val imageW = source.width.toFloat()
+        val imageH = source.height.toFloat()
+
+        // Escala tipo FILL_CENTER: el mayor ratio para llenar la pantalla
+        val scale = maxOf(screenWidth / imageW, screenHeight / imageH)
+
+        val scaledImageW = imageW * scale
+        val scaledImageH = imageH * scale
+
+        // Posición de la imagen escalada respecto a la pantalla
+        val imageLeftOnScreen = (screenWidth - scaledImageW) / 2f
+        val imageTopOnScreen = (screenHeight - scaledImageH) / 2f
+
+        // Coordenadas del recuadro visual en la pantalla
+        val sideOnScreen = minOf(screenWidth, screenHeight) * guideFraction
+        val squareLeftOnScreen = (screenWidth - sideOnScreen) / 2f
+        val verticalOffsetPx = verticalOffsetDp * density
+        val squareTopOnScreen = (screenHeight - sideOnScreen) / 2f - verticalOffsetPx
+
+        // Mapeo inverso a la imagen original
+        val cropLeft = (squareLeftOnScreen - imageLeftOnScreen) / scale
+        val cropTop = (squareTopOnScreen - imageTopOnScreen) / scale
+        val cropSide = sideOnScreen / scale
+
+        // Asegurar límites seguros
+        val finalLeft = cropLeft.toInt().coerceIn(0, source.width)
+        val finalTop = cropTop.toInt().coerceIn(0, source.height)
+        val finalRight = (cropLeft + cropSide).toInt().coerceIn(0, source.width)
+        val finalBottom = (cropTop + cropSide).toInt().coerceIn(0, source.height)
+
+        val finalWidth = finalRight - finalLeft
+        val finalHeight = finalBottom - finalTop
+
+        if (finalWidth <= 0 || finalHeight <= 0) return source
+
+        return Bitmap.createBitmap(source, finalLeft, finalTop, finalWidth, finalHeight)
+    }
+
+    /**
+     * Recorta un cuadrado centrado simple del bitmap (Legacy/Fallback)
      */
     fun centerCropSquare(source: Bitmap, fraction: Float = 0.85f): Bitmap {
         val side = (minOf(source.width, source.height) * fraction.coerceIn(0.1f, 1.0f)).toInt()

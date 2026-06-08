@@ -9,7 +9,11 @@ import java.io.IOException
 import com.tesis.potatodiseaseai.utils.LabelNormalizer        
 import com.tesis.potatodiseaseai.utils.ErrorHandler          
 import com.tesis.potatodiseaseai.utils.AppError              
-import com.tesis.potatodiseaseai.utils.AppLogger 
+import com.tesis.potatodiseaseai.utils.AppLogger
+import org.tensorflow.lite.support.image.ImageProcessor
+import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp
+import org.tensorflow.lite.support.image.ops.Rot90Op
+import org.tensorflow.lite.support.image.ops.ResizeOp
 
 class ImageClassifierHelper(context: Context) {
 
@@ -48,6 +52,11 @@ class ImageClassifierHelper(context: Context) {
             val options = ImageClassifierOptions.builder()
                 .setMaxResults(1)
                 .setScoreThreshold(0.0f)
+                .setBaseOptions(
+                    org.tensorflow.lite.task.core.BaseOptions.builder()
+                        .setNumThreads(4) // MobileNetV2 aprovecha 4 hilos
+                        .build()
+                )
                 .build()
 
             classifier = ImageClassifier.createFromFileAndOptions(
@@ -82,7 +91,7 @@ class ImageClassifierHelper(context: Context) {
         }
     }
 
-    fun classify(bitmap: Bitmap): ClassifierResult {
+    fun classify(bitmap: Bitmap, rotationDegrees: Int = 0): ClassifierResult {
         
         // ✅ Validar si hay error de inicialización
         if (initError != null) {
@@ -125,8 +134,20 @@ class ImageClassifierHelper(context: Context) {
             )
         }
 
+
         return try {
-            val tensorImage = TensorImage.fromBitmap(bitmap)
+            var tensorImage = TensorImage.fromBitmap(bitmap)
+            
+            // Procesamiento de imagen unificado usando ImageProcessor
+            val numRotation = rotationDegrees / 90
+            val minLength = minOf(bitmap.width, bitmap.height)
+            
+            val imageProcessor = ImageProcessor.Builder()
+                .add(ResizeWithCropOrPadOp(minLength, minLength)) // Recorte centrado
+                .add(Rot90Op(numRotation))
+                .build()
+                
+            tensorImage = imageProcessor.process(tensorImage)
 
             val startTime = System.nanoTime()
             val results = localClassifier.classify(tensorImage)
