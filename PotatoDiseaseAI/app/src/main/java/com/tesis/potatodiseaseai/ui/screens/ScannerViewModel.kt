@@ -67,6 +67,12 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
         _uiState.value = _uiState.value.copy(flashEnabled = !_uiState.value.flashEnabled)
     }
 
+    fun turnOffFlash() {
+        if (_uiState.value.flashEnabled) {
+            _uiState.value = _uiState.value.copy(flashEnabled = false)
+        }
+    }
+
     private var lastAnalysisTime = 0L
 
     fun analyzeFrame(imageProxy: ImageProxy) {
@@ -96,7 +102,6 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 
                 if (result.error == null && result.label.isNotBlank()) {
                     // El LabelNormalizer convierte "z_no_potato" → "z no potato" (reemplaza _ por espacios)
-                    // Por eso la comparación debe hacerse DESPUÉS de normalizar
                     val normalizedLabel = com.tesis.potatodiseaseai.utils.LabelNormalizer.normalize(result.label)
                     val isNoPotatoClass = normalizedLabel == "z no potato"
                     val isLowConfidence = result.confidence < 0.70f || isNoPotatoClass

@@ -15,9 +15,6 @@ import androidx.room.PrimaryKey
  *  - prevencion: medidas preventivas recomendadas
  *  - controlQuimico: productos químicos recomendados
  *  - controlBiologico: agentes biológicos o prácticas de biocontrol
- *
- * imagenReferencia / imagenGradcam: nombres de recursos drawable
- * (ej. "lateblight_normal"). Vacíos hasta añadir las imágenes.
  */
 @Entity(tableName = "enfermedades")
 data class EnfermedadEntity(

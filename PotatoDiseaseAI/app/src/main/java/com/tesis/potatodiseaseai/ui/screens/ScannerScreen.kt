@@ -7,7 +7,6 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -37,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.ui.screens.components.CameraPreview
 import com.tesis.potatodiseaseai.utils.FileUtils
@@ -67,6 +68,19 @@ fun ScannerScreen(innerPadding: PaddingValues) {
                 uri?.let { vm.onGalleryImageSelected(it) }
             }
 
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                vm.turnOffFlash()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            vm.turnOffFlash()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         // Preview de cámara ocupando TODA la pantalla
         CameraPreview(
@@ -92,7 +106,7 @@ fun ScannerScreen(innerPadding: PaddingValues) {
                 val left = (size.width - side) / 2f
                 val top = (size.height - side) / 2f - verticalOffsetPx
                 val cornerRadius = 24.dp.toPx()
-                val bracketLen = side * 0.15f // largo de cada brazo de esquina
+                val bracketLen = side * 0.15f
                 val strokeW = 3.dp.toPx()
 
                 // 1. Fondo oscuro con hueco transparente
