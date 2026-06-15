@@ -3,8 +3,8 @@ package com.tesis.potatodiseaseai.ui.screens
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.database.EnfermedadEntity
+import com.tesis.potatodiseaseai.data.repository.AnalisisRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -16,7 +16,7 @@ data class HelpUiState(
 
 class HelpViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val enfermedadDao = AppDatabase.getDatabase(application).enfermedadDao()
+    private val repository = AnalisisRepository(application)
 
     private val _uiState = MutableStateFlow(HelpUiState())
     val uiState: StateFlow<HelpUiState> = _uiState.asStateFlow()
@@ -27,7 +27,7 @@ class HelpViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun loadEnfermedades() {
         viewModelScope.launch {
-            enfermedadDao.getAllEnfermedades()
+            repository.getAllEnfermedades()
                 .catch { e ->
                     _uiState.update { it.copy(error = e.message, isLoading = false) }
                 }

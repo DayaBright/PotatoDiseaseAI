@@ -19,7 +19,6 @@ import org.junit.runner.RunWith
 /**
  * ==========================================================================
  *  PT-I05 — Pruebas de relación FK y CASCADE
- *  Archivo: src/androidTest/.../RelacionFkCascadeInstrumentedTest.kt
  *  Se ejecutan en un dispositivo o emulador Android.
  * ==========================================================================
  *

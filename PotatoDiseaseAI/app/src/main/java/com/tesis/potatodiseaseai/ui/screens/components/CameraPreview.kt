@@ -18,6 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 
+import android.util.Size
+import androidx.camera.core.resolutionselector.ResolutionStrategy
+import java.util.concurrent.Executors
+
 @Composable
 fun CameraPreview(
     context: Context,
@@ -32,6 +36,9 @@ fun CameraPreview(
         }
     }
     var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
+    
+    // Executor dedicado para la cámara (IA) para no saturar el hilo principal
+    val analysisExecutor = remember { Executors.newSingleThreadExecutor() }
 
     AndroidView(
         factory = { previewView },
@@ -42,7 +49,7 @@ fun CameraPreview(
         val provider = ProcessCameraProvider.getInstance(context).get()
         cameraProvider = provider
 
-        // Usar 4:3 — es la relación nativa del sensor y más cercana al cuadrado guía
+        // Usar 4:3 — es la relación nativa del sensor y más cercana al cuadrado guía para fotos
         val resolutionSelector = ResolutionSelector.Builder()
             .setAspectRatioStrategy(AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY)
             .build()
@@ -63,14 +70,21 @@ fun CameraPreview(
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .build()
             
+        // Resolución más baja específica para el ImageAnalysis (480p) para reducir consumo de CPU
+        val analysisResolutionSelector = ResolutionSelector.Builder()
+            .setResolutionStrategy(
+                ResolutionStrategy(Size(480, 640), ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER)
+            )
+            .build()
+            
         val imageAnalysis = ImageAnalysis.Builder()
             .setTargetRotation(displayRotation)
-            .setResolutionSelector(resolutionSelector)
+            .setResolutionSelector(analysisResolutionSelector)
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
             
         onAnalyze?.let { callback ->
-            imageAnalysis.setAnalyzer(androidx.core.content.ContextCompat.getMainExecutor(context)) { proxy ->
+            imageAnalysis.setAnalyzer(analysisExecutor) { proxy ->
                 callback(proxy)
             }
         }
@@ -89,9 +103,10 @@ fun CameraPreview(
         onReady(imageCapture, camera)
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(analysisExecutor) {
         onDispose {
             cameraProvider?.unbindAll()
+            analysisExecutor.shutdown()
         }
     }
 }

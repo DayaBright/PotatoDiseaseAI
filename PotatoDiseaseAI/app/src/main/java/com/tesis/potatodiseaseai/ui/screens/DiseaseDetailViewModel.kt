@@ -3,7 +3,6 @@ package com.tesis.potatodiseaseai.ui.screens
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.database.EnfermedadEntity
 import com.tesis.potatodiseaseai.data.repository.AnalisisRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,8 +18,6 @@ class DiseaseDetailViewModel(application: Application) : AndroidViewModel(applic
     fun loadEnfermedad(id: Long) {
         if (_enfermedad.value != null) return // Ya cargado
         viewModelScope.launch {
-            val db = AppDatabase.getDatabase(getApplication())
-            _enfermedad.value = db.enfermedadDao().getById(id)
             _enfermedad.value = repository.getEnfermedadById(id)
         }
     }

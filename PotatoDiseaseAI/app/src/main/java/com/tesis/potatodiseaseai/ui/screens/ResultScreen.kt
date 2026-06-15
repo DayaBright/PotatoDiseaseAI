@@ -22,7 +22,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tesis.potatodiseaseai.R
-import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.database.EnfermedadEntity
 import com.tesis.potatodiseaseai.data.repository.AnalisisRepository
 import com.tesis.potatodiseaseai.ui.screens.components.CachedImage
@@ -51,14 +50,12 @@ fun ResultScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var expandedDetail by remember { mutableStateOf<Pair<String, String>?>(null) }
 
-    // Cargar datos de la enfermedad desde Room
-    val db = remember { AppDatabase.getDatabase(context) }
     var enfermedad by remember { mutableStateOf<EnfermedadEntity?>(null) }
 
     LaunchedEffect(disease) {
         enfermedad = withContext(Dispatchers.IO) {
             val normalizedLabel = LabelNormalizer.normalize(disease)
-            db.enfermedadDao().getByLabel(normalizedLabel)
+            repository.getEnfermedadByLabel(normalizedLabel)
         }
     }
     
