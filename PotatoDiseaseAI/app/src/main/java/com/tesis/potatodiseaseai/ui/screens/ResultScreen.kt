@@ -29,6 +29,7 @@ import com.tesis.potatodiseaseai.ui.screens.components.CachedImage
 import com.tesis.potatodiseaseai.ui.screens.components.DiagnosisCard
 import com.tesis.potatodiseaseai.utils.LabelNormalizer
 import com.tesis.potatodiseaseai.ui.theme.AppTheme
+import com.tesis.potatodiseaseai.utils.ConfidenceUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -64,7 +65,7 @@ fun ResultScreen(
     val diseaseName = enfermedad?.nombre ?: disease
     val isHealthy = disease.lowercase().contains("healthy")
     // Usar "z no potato" normalizado (LabelNormalizer convierte "_" → " ")
-    val isLowConfidence = confidence < 0.70f || disease == "z no potato"
+    val isLowConfidence = ConfidenceUtils.isLowConfidence(confidence) || disease == "z no potato"
     val isSaved = detectionId != null && detectionId != 0L
 
     // Listas de recomendaciones desde la BD

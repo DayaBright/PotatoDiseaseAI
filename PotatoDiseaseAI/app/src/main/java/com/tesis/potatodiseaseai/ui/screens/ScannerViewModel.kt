@@ -104,7 +104,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                     // El LabelNormalizer convierte "z_no_potato" → "z no potato" (reemplaza _ por espacios)
                     val normalizedLabel = com.tesis.potatodiseaseai.utils.LabelNormalizer.normalize(result.label)
                     val isNoPotatoClass = normalizedLabel == "z no potato"
-                    val isLowConfidence = result.confidence < 0.70f || isNoPotatoClass
+                    val isLowConfidence = com.tesis.potatodiseaseai.utils.ConfidenceUtils.isLowConfidence(result.confidence) || isNoPotatoClass
                     val translatedName = diseaseNamesMap[normalizedLabel] ?: result.label
                     _uiState.value = _uiState.value.copy(
                         liveClassification = if (isLowConfidence) null else translatedName,
@@ -223,7 +223,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 val isNoPotatoClass = result.label == "z no potato"
                 // Si en vivo decía "No se detecta hoja", forzamos que la captura también
                 // para evitar que el modelo asigne una enfermedad errónea por el cambio de resolución.
-                val isLowConfidence = lastLiveLowConfidence || result.confidence < 0.70f || isNoPotatoClass
+                val isLowConfidence = lastLiveLowConfidence || com.tesis.potatodiseaseai.utils.ConfidenceUtils.isLowConfidence(result.confidence) || isNoPotatoClass
 
                 val savedUri: Uri
                 val detectionId: Long?
@@ -348,7 +348,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
 
                 // El LabelNormalizer ya normalizó el label: "z_no_potato" → "z no potato"
                 val isNoPotatoClass = result.label == "z no potato"
-                val isLowConfidence = result.confidence < 0.70f || isNoPotatoClass
+                val isLowConfidence = com.tesis.potatodiseaseai.utils.ConfidenceUtils.isLowConfidence(result.confidence) || isNoPotatoClass
 
                 val savedUri: Uri
                 val detectionId: Long?

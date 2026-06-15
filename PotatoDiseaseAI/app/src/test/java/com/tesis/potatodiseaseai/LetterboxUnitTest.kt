@@ -2,166 +2,84 @@ package com.tesis.potatodiseaseai
 
 import org.junit.Assert.*
 import org.junit.Test
+import com.tesis.potatodiseaseai.utils.ImageUtils
 
 /**
  * ==========================================================================
- *  PT-U08 — Letterbox / Preservación de aspecto
+ *  PT-U12 — Transformación de letterbox (Padding para el modelo)
  *  Archivo: src/test/.../LetterboxUnitTest.kt
  *  Se ejecutan en la JVM local, sin dispositivo ni emulador.
  * ==========================================================================
  *
- *  RF cubierto: RF-02 (selección desde galería con procesamiento correcto)
- *  HU cubierta: HU-02 (analizar imagen de galería sin distorsión)
- *  RNF cubierto: RNF-06 (preprocesamiento robusto con letterbox)
+ *  RF cubierto: RNF-04 (precisión del modelo, preprocesamiento)
+ *  HU cubierta: N/A (requisito técnico)
  *
- *  Verifica la lógica de letterbox que redimensiona la imagen preservando
- *  la relación de aspecto y rellenando con negro, sin recortar ni distorsionar.
+ *  Verifica la lógica matemática pura del escalado letterbox para que
+ *  las imágenes quepan dentro de un cuadrado sin perder la proporción original.
  */
 class LetterboxUnitTest {
 
-    companion object {
-        const val TARGET_SIZE = 224
-    }
-
-    /**
-     * Simula la lógica de ScannerViewModel.letterboxBitmap() en JVM.
-     * Retorna las dimensiones escaladas y los offsets de centrado.
-     */
-    data class LetterboxResult(
-        val outputWidth: Int,
-        val outputHeight: Int,
-        val scaledWidth: Int,
-        val scaledHeight: Int,
-        val offsetX: Float,
-        val offsetY: Float
-    )
-
-    private fun calculateLetterbox(srcWidth: Int, srcHeight: Int): LetterboxResult {
-        val srcW = srcWidth.toFloat()
-        val srcH = srcHeight.toFloat()
-
-        // Factor de escala para que el lado mayor quepa en TARGET_SIZE
-        val scale = TARGET_SIZE.toFloat() / maxOf(srcW, srcH)
-
-        val scaledW = (srcW * scale).toInt()
-        val scaledH = (srcH * scale).toInt()
-
-        // Centrar la imagen escalada en el canvas
-        val offsetX = (TARGET_SIZE - scaledW) / 2f
-        val offsetY = (TARGET_SIZE - scaledH) / 2f
-
-        return LetterboxResult(
-            outputWidth = TARGET_SIZE,
-            outputHeight = TARGET_SIZE,
-            scaledWidth = scaledW,
-            scaledHeight = scaledH,
-            offsetX = offsetX,
-            offsetY = offsetY
-        )
-    }
-
-    // ── PT-U08a — Imagen cuadrada ──
+    // ── PT-U12a — Escala proporcional de imagen apaisada (landscape) ──
 
     @Test
-    fun `PT-U08a — imagen cuadrada 500x500 produce salida 224x224 sin padding`() {
-        val result = calculateLetterbox(500, 500)
-        assertEquals("Salida debe ser 224x224", TARGET_SIZE, result.outputWidth)
-        assertEquals("Salida debe ser 224x224", TARGET_SIZE, result.outputHeight)
-        assertEquals("Imagen escalada ocupa todo el ancho", TARGET_SIZE, result.scaledWidth)
-        assertEquals("Imagen escalada ocupa todo el alto", TARGET_SIZE, result.scaledHeight)
-        assertEquals("Sin offset horizontal", 0f, result.offsetX, 0.5f)
-        assertEquals("Sin offset vertical", 0f, result.offsetY, 0.5f)
+    fun `PT-U12a — imagen apaisada se escala respetando proporcion`() {
+        // Imagen 640x480, target 224
+        // scale = 224 / 640 = 0.35
+        // scaledW = 224, scaledH = 480 * 0.35 = 168
+        val result = ImageUtils.calculateLetterbox(640f, 480f, 224)
+
+        assertEquals("El lado mayor debe igualar al targetSize", 224, result.scaledW)
+        assertEquals("El lado menor debe escalar proporcionalmente", 168, result.scaledH)
     }
 
-    // ── PT-U08b — Imagen horizontal (landscape) ──
+    // ── PT-U12b — Escala proporcional de imagen vertical (portrait) ──
 
     @Test
-    fun `PT-U08b — imagen horizontal 640x480 tiene padding vertical (pillarbox)`() {
-        val result = calculateLetterbox(640, 480)
-        assertEquals("Salida debe ser 224x224", TARGET_SIZE, result.outputWidth)
-        assertEquals("Salida debe ser 224x224", TARGET_SIZE, result.outputHeight)
-        assertEquals("El ancho escalado debe ocupar todo", TARGET_SIZE, result.scaledWidth)
-        assertTrue(
-            "El alto escalado debe ser menor que 224: ${result.scaledHeight}",
-            result.scaledHeight < TARGET_SIZE
-        )
-        assertTrue("Debe haber offset vertical > 0", result.offsetY > 0f)
+    fun `PT-U12b — imagen vertical se escala respetando proporcion`() {
+        // Imagen 1080x1920, target 224
+        // scale = 224 / 1920 = 0.11666...
+        // scaledW = 1080 * 0.11666... = 126
+        // scaledH = 224
+        val result = ImageUtils.calculateLetterbox(1080f, 1920f, 224)
+
+        assertEquals("El lado menor debe escalar proporcionalmente", 126, result.scaledW)
+        assertEquals("El lado mayor debe igualar al targetSize", 224, result.scaledH)
     }
 
-    // ── PT-U08c — Imagen vertical (portrait) ──
+    // ── PT-U12c — Escala de imagen ya cuadrada ──
 
     @Test
-    fun `PT-U08c — imagen vertical 480x640 tiene padding horizontal (letterbox)`() {
-        val result = calculateLetterbox(480, 640)
-        assertEquals("Salida debe ser 224x224", TARGET_SIZE, result.outputWidth)
-        assertEquals("Salida debe ser 224x224", TARGET_SIZE, result.outputHeight)
-        assertTrue(
-            "El ancho escalado debe ser menor que 224: ${result.scaledWidth}",
-            result.scaledWidth < TARGET_SIZE
-        )
-        assertEquals("El alto escalado debe ocupar todo", TARGET_SIZE, result.scaledHeight)
-        assertTrue("Debe haber offset horizontal > 0", result.offsetX > 0f)
+    fun `PT-U12c — imagen cuadrada llena todo el targetSize`() {
+        // Imagen 500x500, target 224
+        val result = ImageUtils.calculateLetterbox(500f, 500f, 224)
+
+        assertEquals(224, result.scaledW)
+        assertEquals(224, result.scaledH)
+        assertEquals("No debe haber padding X", 0f, result.offsetX)
+        assertEquals("No debe haber padding Y", 0f, result.offsetY)
     }
 
-    // ── PT-U08d — Imagen ya del tamaño correcto ──
+    // ── PT-U12d — Cálculo de padding (offsets) ──
 
     @Test
-    fun `PT-U08d — imagen de 224x224 no cambia dimensiones`() {
-        val result = calculateLetterbox(224, 224)
-        assertEquals(TARGET_SIZE, result.scaledWidth)
-        assertEquals(TARGET_SIZE, result.scaledHeight)
-        assertEquals(0f, result.offsetX, 0.5f)
-        assertEquals(0f, result.offsetY, 0.5f)
+    fun `PT-U12d — el padding debe centrar la imagen en el canvas`() {
+        // Apaisada: 640x480 -> 224x168
+        // Padding total Y = 224 - 168 = 56
+        // offsetY debe ser 56 / 2 = 28
+        val result = ImageUtils.calculateLetterbox(640f, 480f, 224)
+
+        assertEquals("No debe haber padding X para apaisadas", 0f, result.offsetX)
+        assertEquals("Padding Y debe ser la mitad del espacio restante", 28f, result.offsetY)
     }
 
-    // ── PT-U08e — Imagen muy grande ──
-
     @Test
-    fun `PT-U08e — imagen 4000x3000 se reduce a caber en 224x224`() {
-        val result = calculateLetterbox(4000, 3000)
-        assertEquals(TARGET_SIZE, result.outputWidth)
-        assertEquals(TARGET_SIZE, result.outputHeight)
-        assertTrue(
-            "Ancho escalado no debe exceder 224: ${result.scaledWidth}",
-            result.scaledWidth <= TARGET_SIZE
-        )
-        assertTrue(
-            "Alto escalado no debe exceder 224: ${result.scaledHeight}",
-            result.scaledHeight <= TARGET_SIZE
-        )
-    }
+    fun `PT-U12e — el padding debe centrar imagen vertical en el canvas`() {
+        // Vertical: 480x640 -> 168x224
+        // Padding total X = 224 - 168 = 56
+        // offsetX debe ser 56 / 2 = 28
+        val result = ImageUtils.calculateLetterbox(480f, 640f, 224)
 
-    // ── PT-U08f — Imagen muy pequeña ──
-
-    @Test
-    fun `PT-U08f — imagen 50x30 se escala a caber en 224x224`() {
-        val result = calculateLetterbox(50, 30)
-        assertEquals(TARGET_SIZE, result.outputWidth)
-        assertEquals(TARGET_SIZE, result.outputHeight)
-        assertTrue(
-            "Ancho escalado no debe exceder 224: ${result.scaledWidth}",
-            result.scaledWidth <= TARGET_SIZE
-        )
-        assertTrue(
-            "Alto escalado no debe exceder 224: ${result.scaledHeight}",
-            result.scaledHeight <= TARGET_SIZE
-        )
-    }
-
-    // ── PT-U08g — La relación de aspecto se preserva ──
-
-    @Test
-    fun `PT-U08g — la relacion de aspecto se preserva tras letterbox`() {
-        val srcW = 800
-        val srcH = 600
-        val originalRatio = srcW.toFloat() / srcH.toFloat()
-
-        val result = calculateLetterbox(srcW, srcH)
-        val scaledRatio = result.scaledWidth.toFloat() / result.scaledHeight.toFloat()
-
-        assertEquals(
-            "La relación de aspecto debe preservarse",
-            originalRatio, scaledRatio, 0.05f
-        )
+        assertEquals("Padding X debe ser la mitad del espacio restante", 28f, result.offsetX)
+        assertEquals("No debe haber padding Y para verticales", 0f, result.offsetY)
     }
 }

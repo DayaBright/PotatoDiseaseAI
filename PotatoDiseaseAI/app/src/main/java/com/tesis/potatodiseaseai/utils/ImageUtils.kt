@@ -105,6 +105,49 @@ object ImageUtils {
         return Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
     }
 
+    data class CropResult(val left: Int, val top: Int, val width: Int, val height: Int)
+
+    /**
+     * Lógica pura para el cálculo del recorte (testable en JVM)
+     */
+    fun calculateCropRect(
+        imageW: Float,
+        imageH: Float,
+        screenWidth: Int,
+        screenHeight: Int,
+        guideFraction: Float,
+        verticalOffsetDp: Float,
+        density: Float
+    ): CropResult {
+        val scale = maxOf(screenWidth / imageW, screenHeight / imageH)
+        val scaledImageW = imageW * scale
+        val scaledImageH = imageH * scale
+
+        val imageLeftOnScreen = (screenWidth - scaledImageW) / 2f
+        val imageTopOnScreen = (screenHeight - scaledImageH) / 2f
+
+        val sideOnScreen = minOf(screenWidth, screenHeight) * guideFraction
+        val squareLeftOnScreen = (screenWidth - sideOnScreen) / 2f
+        val verticalOffsetPx = verticalOffsetDp * density
+        val squareTopOnScreen = (screenHeight - sideOnScreen) / 2f - verticalOffsetPx
+
+        val cropLeft = (squareLeftOnScreen - imageLeftOnScreen) / scale
+        val cropTop = (squareTopOnScreen - imageTopOnScreen) / scale
+        val cropSide = sideOnScreen / scale
+
+        val finalLeft = cropLeft.toInt().coerceIn(0, imageW.toInt())
+        val finalTop = cropTop.toInt().coerceIn(0, imageH.toInt())
+        val finalRight = (cropLeft + cropSide).toInt().coerceIn(0, imageW.toInt())
+        val finalBottom = (cropTop + cropSide).toInt().coerceIn(0, imageH.toInt())
+
+        return CropResult(
+            left = finalLeft,
+            top = finalTop,
+            width = finalRight - finalLeft,
+            height = finalBottom - finalTop
+        )
+    }
+
     /**
      * Recorta un cuadrado de la imagen mapeando las coordenadas del recuadro
      * visual (que tiene un offset y un tamaño relativo a la pantalla) a las
@@ -118,42 +161,14 @@ object ImageUtils {
         verticalOffsetDp: Float = 60f,
         density: Float
     ): Bitmap {
-        val imageW = source.width.toFloat()
-        val imageH = source.height.toFloat()
+        val cropRect = calculateCropRect(
+            source.width.toFloat(), source.height.toFloat(),
+            screenWidth, screenHeight, guideFraction, verticalOffsetDp, density
+        )
 
-        // Escala tipo FILL_CENTER: el mayor ratio para llenar la pantalla
-        val scale = maxOf(screenWidth / imageW, screenHeight / imageH)
+        if (cropRect.width <= 0 || cropRect.height <= 0) return source
 
-        val scaledImageW = imageW * scale
-        val scaledImageH = imageH * scale
-
-        // Posición de la imagen escalada respecto a la pantalla
-        val imageLeftOnScreen = (screenWidth - scaledImageW) / 2f
-        val imageTopOnScreen = (screenHeight - scaledImageH) / 2f
-
-        // Coordenadas del recuadro visual en la pantalla
-        val sideOnScreen = minOf(screenWidth, screenHeight) * guideFraction
-        val squareLeftOnScreen = (screenWidth - sideOnScreen) / 2f
-        val verticalOffsetPx = verticalOffsetDp * density
-        val squareTopOnScreen = (screenHeight - sideOnScreen) / 2f - verticalOffsetPx
-
-        // Mapeo inverso a la imagen original
-        val cropLeft = (squareLeftOnScreen - imageLeftOnScreen) / scale
-        val cropTop = (squareTopOnScreen - imageTopOnScreen) / scale
-        val cropSide = sideOnScreen / scale
-
-        // Asegurar límites seguros
-        val finalLeft = cropLeft.toInt().coerceIn(0, source.width)
-        val finalTop = cropTop.toInt().coerceIn(0, source.height)
-        val finalRight = (cropLeft + cropSide).toInt().coerceIn(0, source.width)
-        val finalBottom = (cropTop + cropSide).toInt().coerceIn(0, source.height)
-
-        val finalWidth = finalRight - finalLeft
-        val finalHeight = finalBottom - finalTop
-
-        if (finalWidth <= 0 || finalHeight <= 0) return source
-
-        return Bitmap.createBitmap(source, finalLeft, finalTop, finalWidth, finalHeight)
+        return Bitmap.createBitmap(source, cropRect.left, cropRect.top, cropRect.width, cropRect.height)
     }
 
     /**
@@ -193,34 +208,33 @@ object ImageUtils {
         }
     }
 
+    data class LetterboxResult(val scaledW: Int, val scaledH: Int, val offsetX: Float, val offsetY: Float)
+
+    /**
+     * Lógica pura matemática para letterbox (testable en JVM)
+     */
+    fun calculateLetterbox(srcW: Float, srcH: Float, targetSize: Int): LetterboxResult {
+        val scale = targetSize.toFloat() / maxOf(srcW, srcH)
+        val scaledW = (srcW * scale).toInt()
+        val scaledH = (srcH * scale).toInt()
+        val offsetX = (targetSize - scaledW) / 2f
+        val offsetY = (targetSize - scaledH) / 2f
+        return LetterboxResult(scaledW, scaledH, offsetX, offsetY)
+    }
+
     /**
      * Redimensiona un bitmap para que quepa dentro de un cuadrado de [targetSize]×[targetSize]
      * manteniendo la proporción original, y rellena los bordes vacíos con negro.
-     * 
-     * Ejemplo: una imagen 640×480 se escala a 224×168 y se centra en un canvas 224×224
-     * con 28px de padding negro arriba y abajo.
      */
     fun letterboxBitmap(source: Bitmap, targetSize: Int): Bitmap {
-        val srcW = source.width.toFloat()
-        val srcH = source.height.toFloat()
+        val result = calculateLetterbox(source.width.toFloat(), source.height.toFloat(), targetSize)
 
-        // Factor de escala para que el lado mayor quepa en targetSize
-        val scale = targetSize.toFloat() / maxOf(srcW, srcH)
-
-        val scaledW = (srcW * scale).toInt()
-        val scaledH = (srcH * scale).toInt()
-
-        // Crear bitmap negro de targetSize×targetSize
         val output = Bitmap.createBitmap(targetSize, targetSize, Bitmap.Config.ARGB_8888)
         val canvas = android.graphics.Canvas(output)
         canvas.drawColor(android.graphics.Color.rgb(112, 122, 95))
 
-        // Centrar la imagen escalada
-        val offsetX = (targetSize - scaledW) / 2f
-        val offsetY = (targetSize - scaledH) / 2f
-
-        val scaledBitmap = source.scale(scaledW, scaledH)
-        canvas.drawBitmap(scaledBitmap, offsetX, offsetY, android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG))
+        val scaledBitmap = source.scale(result.scaledW, result.scaledH)
+        canvas.drawBitmap(scaledBitmap, result.offsetX, result.offsetY, android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG))
 
         if (scaledBitmap !== source) scaledBitmap.recycle()
 

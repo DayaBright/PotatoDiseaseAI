@@ -24,6 +24,7 @@ import com.tesis.potatodiseaseai.R
 import com.tesis.potatodiseaseai.data.database.AnalisisConEnfermedad
 import com.tesis.potatodiseaseai.ui.screens.components.CachedImage
 import com.tesis.potatodiseaseai.ui.theme.Dimensions
+import com.tesis.potatodiseaseai.utils.ConfidenceUtils
 import com.tesis.potatodiseaseai.utils.DateUtils
 
 @SuppressLint("DefaultLocale")
@@ -233,7 +234,7 @@ private fun AnalisisCard(
     onDelete: () -> Unit
 ) {
     val isHealthy = item.enfermedad.labelCnn.lowercase().contains("healthy")
-    val isLowConfidence = item.analisis.precision < 0.70f || item.enfermedad.labelCnn == "z no potato"
+    val isLowConfidence =  ConfidenceUtils.isLowConfidence(item.analisis.precision) || item.enfermedad.labelCnn == "z no potato"
 
     Card(
         modifier = Modifier
@@ -272,7 +273,7 @@ private fun AnalisisCard(
                         Text(
                             text = if (isLowConfidence) {
                                 val isNoPotato = item.enfermedad.labelCnn == "z no potato" || item.enfermedad.labelCnn == "z_no_potato"
-                                if (isNoPotato && item.analisis.precision >= 0.70f) {
+                                if (isNoPotato && !ConfidenceUtils.isLowConfidence(item.analisis.precision)) {
                                     stringResource(R.string.history_confidence, "<70")
                                 } else {
                                     stringResource(R.string.history_confidence, "< 70")
