@@ -172,7 +172,7 @@ object ImageUtils {
     }
 
     /**
-     * Recorta un cuadrado centrado simple del bitmap (Legacy/Fallback)
+     * Recorta un cuadrado centrado simple del bitmap
      */
     fun centerCropSquare(source: Bitmap, fraction: Float = 0.85f): Bitmap {
         val side = (minOf(source.width, source.height) * fraction.coerceIn(0.1f, 1.0f)).toInt()

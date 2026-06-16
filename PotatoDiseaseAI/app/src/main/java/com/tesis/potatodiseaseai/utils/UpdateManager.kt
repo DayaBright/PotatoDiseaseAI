@@ -1,18 +1,13 @@
 package com.tesis.potatodiseaseai.utils
 
-import android.app.DownloadManager
-import android.content.BroadcastReceiver
+
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.tesis.potatodiseaseai.BuildConfig
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +18,6 @@ import java.io.File
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
-import androidx.core.net.toUri
 
 class UpdateManager(private val context: Context) {
 
@@ -69,7 +63,7 @@ class UpdateManager(private val context: Context) {
                 reader.close()
 
                 val json = JSONObject(response)
-                val tagName = json.getString("tag_name") // Ej. "v1.1.0"
+                val tagName = json.getString("tag_name")
                 val assets = json.getJSONArray("assets")
 
                 var downloadUrl = ""
@@ -85,59 +79,87 @@ class UpdateManager(private val context: Context) {
 
                 // Comparación muy básica. Para producción es mejor comparar semver.
                 if (tagName != currentVersion && downloadUrl.isNotEmpty()) {
+                    android.util.Log.d("UpdateManager", "URL DETECTADA: $downloadUrl")
                     return@withContext Pair(tagName, downloadUrl)
+
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        // Dentro de checkForUpdates, antes del return de downloadUrl
+
         return@withContext null
     }
 
     /**
-     * Inicia la descarga del APK y registra el receiver para la instalación.
+     * Inicia la descarga del APK sin usar DownloadManager.
      */
-    fun downloadAndInstallUpdate(apkUrl: String, version: String) {
-        Toast.makeText(context, "Iniciando descarga de $version...", Toast.LENGTH_SHORT).show()
+    suspend fun downloadAndInstallUpdate(apkUrl: String, version: String, onProgress: (Float) -> Unit): File? = withContext(Dispatchers.IO) {
+        try {
+            var connection = URL(apkUrl).openConnection() as HttpURLConnection
+            connection.instanceFollowRedirects = true
+            connection.addRequestProperty("User-Agent", "Mozilla/5.0")
+            connection.connect()
 
-        val request = DownloadManager.Request(apkUrl.toUri())
-            .setTitle("Actualización de PotatoDiseaseAI")
-            .setDescription("Descargando versión $version")
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "PotatoDiseaseAI_$version.apk")
+            if (connection.responseCode in 300..399) {
+                val redirectUrl = connection.getHeaderField("Location")
+                connection = URL(redirectUrl).openConnection() as HttpURLConnection
+                connection.addRequestProperty("User-Agent", "Mozilla/5.0")
+                connection.connect()
+            }
 
-        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        val downloadId = downloadManager.enqueue(request)
+            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+                throw Exception("Servidor devolvió error ${connection.responseCode}")
+            }
 
-        val onComplete = object : BroadcastReceiver() {
-            override fun onReceive(c: Context, intent: Intent) {
-                val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-                if (id == downloadId) {
-                    Toast.makeText(context, "Descarga completada", Toast.LENGTH_SHORT).show()
-                    installApk(downloadId)
-                    context.unregisterReceiver(this)
+            val fileLength = connection.contentLength
+            val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "PotatoDiseaseAI_$version.apk")
+            
+            connection.inputStream.use { input ->
+                file.outputStream().use { output ->
+                    val data = ByteArray(8192)
+                    var total: Long = 0
+                    var count: Int
+                    var lastProgress = 0
+                    
+                    while (input.read(data).also { count = it } != -1) {
+                        total += count
+                        output.write(data, 0, count)
+                        if (fileLength > 0) {
+                            val progress = ((total * 100) / fileLength).toInt()
+                            if (progress > lastProgress) {
+                                lastProgress = progress
+                                withContext(Dispatchers.Main) {
+                                    onProgress(progress / 100f)
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        }
+            return@withContext file
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED)
-        } else {
-            ContextCompat.registerReceiver(
-                context,
-                onComplete,
-                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
-                ContextCompat.RECEIVER_NOT_EXPORTED
-            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Error al descargar: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+            return@withContext null
         }
     }
 
     /**
      * Lanza el intent para instalar el APK descargado
      */
-    private fun installApk(downloadId: Long) {
-        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        val uri = downloadManager.getUriForDownloadedFile(downloadId) ?: return
+    fun installApk(file: File) {
+        if (!file.exists()) return
+
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
 
         val installIntent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(uri, "application/vnd.android.package-archive")

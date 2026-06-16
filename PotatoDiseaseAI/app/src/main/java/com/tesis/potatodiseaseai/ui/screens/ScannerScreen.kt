@@ -54,6 +54,7 @@ fun ScannerScreen(innerPadding: PaddingValues) {
     val snackbarHostState = remember { SnackbarHostState() }
     val imageCaptureState = remember { mutableStateOf<ImageCapture?>(null) }
     val cameraState = remember { mutableStateOf<androidx.camera.core.Camera?>(null) }
+    var lastClickTime by remember { mutableStateOf(0L) }
 
     val cameraPermissionLauncher =
             rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
@@ -372,6 +373,10 @@ fun ScannerScreen(innerPadding: PaddingValues) {
                 // Botón Galería
                 IconButton(
                         onClick = {
+                            val currentTime = System.currentTimeMillis()
+                            if (currentTime - lastClickTime < 1500L || uiState.isClassifying) return@IconButton
+                            lastClickTime = currentTime
+
                             galleryLauncher.launch(
                                     PickVisualMediaRequest(
                                             ActivityResultContracts.PickVisualMedia.ImageOnly
@@ -403,6 +408,10 @@ fun ScannerScreen(innerPadding: PaddingValues) {
                 ) {
                     IconButton(
                             onClick = {
+                                val currentTime = System.currentTimeMillis()
+                                if (currentTime - lastClickTime < 1500L || uiState.isClassifying) return@IconButton
+                                lastClickTime = currentTime
+
                                 val imageCapture = imageCaptureState.value ?: return@IconButton
                                 vm.startCapture()
 

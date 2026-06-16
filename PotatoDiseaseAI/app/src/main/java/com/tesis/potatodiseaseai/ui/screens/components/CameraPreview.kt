@@ -1,7 +1,6 @@
 package com.tesis.potatodiseaseai.ui.screens.components
 
 import android.content.Context
-
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -17,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
-
 import android.util.Size
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import java.util.concurrent.Executors

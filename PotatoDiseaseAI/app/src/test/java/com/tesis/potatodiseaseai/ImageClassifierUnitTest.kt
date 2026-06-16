@@ -9,8 +9,6 @@ import com.tesis.potatodiseaseai.utils.LabelNormalizer
  *  BLOQUE 1 — PRUEBAS UNITARIAS (Unit Tests)
  *  Se ejecutan en la JVM local, sin dispositivo ni emulador.
  * ==========================================================================
- *  Las pruebas validan la lógica implementada en el sistema (ej. LabelNormalizer)
- *  en lugar de replicar y probar la lógica dentro del mismo archivo de prueba.
  */
 class ImageClassifierUnitTest {
 

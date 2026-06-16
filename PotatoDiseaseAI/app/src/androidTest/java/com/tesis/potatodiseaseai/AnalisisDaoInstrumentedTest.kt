@@ -17,7 +17,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Pruebas instrumentadas para [AnalisisDao] con Room.
+ * Pruebas instrumentadas para AnalisisDao con Room.
  *
  * Se usa una base de datos en memoria (inMemoryDatabaseBuilder) para que
  * cada prueba sea independiente y no afecte datos reales del dispositivo.
@@ -57,7 +57,7 @@ class AnalisisDaoInstrumentedTest {
 
         // Base de datos en memoria: se destruye al cerrar
         database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
-            .allowMainThreadQueries()   // Permitido solo en tests
+            .allowMainThreadQueries()
             .build()
 
         analisisDao = database.analisisDao()

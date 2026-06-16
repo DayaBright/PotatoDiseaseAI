@@ -13,7 +13,6 @@ import com.tesis.potatodiseaseai.utils.AppLogger
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp
 import org.tensorflow.lite.support.image.ops.Rot90Op
-import org.tensorflow.lite.support.image.ops.ResizeOp
 
 class ImageClassifierHelper(context: Context) {
 

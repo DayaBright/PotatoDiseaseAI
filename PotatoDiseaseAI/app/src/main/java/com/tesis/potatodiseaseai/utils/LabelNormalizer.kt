@@ -8,7 +8,7 @@ object LabelNormalizer {
     fun normalize(label: String): String {
         return label
             .substringAfter("Potato___")  // Remover prefijo
-            .replace("_", " ")             // Reemplazar guiones bajos
+            .replace("_", " ") // Reemplazar guiones bajos
             .lowercase()                   // Convertir a minúsculas
             .trim()                        // Eliminar espacios
     }

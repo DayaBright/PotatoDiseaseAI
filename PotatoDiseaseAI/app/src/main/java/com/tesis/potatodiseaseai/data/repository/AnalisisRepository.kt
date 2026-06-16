@@ -9,6 +9,7 @@ import com.tesis.potatodiseaseai.data.database.AppDatabase
 import com.tesis.potatodiseaseai.data.database.EnfermedadEntity
 import com.tesis.potatodiseaseai.utils.FileUtils
 import kotlinx.coroutines.flow.Flow
+import androidx.core.net.toUri
 
 class AnalisisRepository(private val context: Context) {
 
@@ -26,7 +27,7 @@ class AnalisisRepository(private val context: Context) {
         analisisDao.getAllAnalisis()
 
     /**
-     * Guarda un nuevo análisis vinculándolo por labelCnn a la tabla enfermedades.
+     * Guarda un nuevo análisis vinculándolo a la tabla enfermedades.
      * Retorna el ID del registro insertado.
      */
     suspend fun insertAnalisis(
@@ -77,7 +78,7 @@ class AnalisisRepository(private val context: Context) {
     private suspend fun deleteInternal(id: Long, imageUri: String): Boolean {
         return try {
             analisisDao.deleteById(id)
-            FileUtils.deleteImage(Uri.parse(imageUri))
+            FileUtils.deleteImage(imageUri.toUri())
             Log.d(TAG, "✓ Análisis eliminado: $id")
             true
         } catch (e: Exception) {

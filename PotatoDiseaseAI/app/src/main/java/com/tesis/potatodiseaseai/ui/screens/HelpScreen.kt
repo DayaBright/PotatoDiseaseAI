@@ -19,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -390,6 +389,8 @@ private fun UpdateCard() {
     val coroutineScope = rememberCoroutineScope()
     var isChecking by remember { mutableStateOf(false) }
     var updateAvailable by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var isDownloading by remember { mutableStateOf(false) }
+    var downloadProgress by remember { mutableFloatStateOf(0f) }
     val updateManager = remember { UpdateManager(context) }
     val currentVersion = BuildConfig.VERSION_NAME
 
@@ -436,11 +437,29 @@ private fun UpdateCard() {
                         modifier = Modifier.size(Dimensions.iconSizeSmall),
                         strokeWidth = 2.dp
                     )
+                } else if (isDownloading) {
+                    CircularProgressIndicator(
+                        progress = { downloadProgress },
+                        modifier = Modifier.size(Dimensions.iconSizeSmall),
+                        strokeWidth = 2.dp
+                    )
                 } else if (updateAvailable != null) {
                     IconButton(
                         onClick = {
                             updateAvailable?.let { (version, url) ->
-                                updateManager.downloadAndInstallUpdate(url, version)
+                                isDownloading = true
+                                downloadProgress = 0f
+                                Toast.makeText(context, "Iniciando descarga...", Toast.LENGTH_SHORT).show()
+                                coroutineScope.launch {
+                                    val file = updateManager.downloadAndInstallUpdate(url, version) { progress ->
+                                        downloadProgress = progress
+                                    }
+                                    isDownloading = false
+                                    if (file != null) {
+                                        Toast.makeText(context, "Descarga completada", Toast.LENGTH_SHORT).show()
+                                        updateManager.installApk(file)
+                                    }
+                                }
                             }
                         }
                     ) {
@@ -482,7 +501,7 @@ private fun UpdateCard() {
             if (updateAvailable != null) {
                 Spacer(modifier = Modifier.height(Dimensions.spacingSmall))
                 Text(
-                    text = "¡Hay una nueva actualización (v${updateAvailable?.first}) disponible! Toca el ícono de descarga para actualizar.",
+                    text = "¡Hay una nueva actualización (${updateAvailable?.first}) disponible! Toca el ícono de descarga para actualizar.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )

@@ -77,7 +77,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
 
     fun analyzeFrame(imageProxy: ImageProxy) {
         val localClassifier = classifier
-        if (!localClassifier.isReady() || _uiState.value.isClassifying || _uiState.value.isCapturing) {
+         if (!localClassifier.isReady() || _uiState.value.isClassifying || _uiState.value.isCapturing) {
             imageProxy.close()
             return
         }
@@ -99,7 +99,10 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 
                 // La rotación y el recorte ahora los maneja el ImageProcessor
                 val result = localClassifier.classify(rawBitmap, rotationDegrees)
-                
+
+                AppLogger.debug(TAG, "RAW RESULT (Live): ${result.label} (${(result.confidence * 100).toInt()}%)")
+
+
                 if (result.error == null && result.label.isNotBlank()) {
                     // El LabelNormalizer convierte "z_no_potato" → "z no potato" (reemplaza _ por espacios)
                     val normalizedLabel = com.tesis.potatodiseaseai.utils.LabelNormalizer.normalize(result.label)
@@ -157,8 +160,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
      */
     private fun classifyAndSave(sourceUri: Uri) {
         val localClassifier = classifier
-
-        if (!localClassifier.isReady()) {
+          if (!localClassifier.isReady()) {
             _uiState.value = _uiState.value.copy(
                 error = ErrorHandler.getUserMessage(
                     com.tesis.potatodiseaseai.utils.AppError.ClassificationError()
@@ -196,6 +198,8 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 // ── PASO 3: Clasificar ──
                 // ImageClassifierHelper manejará internamente la rotación y el recorte usando ImageProcessor (C++)
                 val result = localClassifier.classify(rawBitmap, rotationDegrees)
+
+                AppLogger.debug(TAG, "RAW RESULT (Live): ${result.label} (${(result.confidence * 100).toInt()}%)")
 
                 // Validar que la clasificación fue exitosa
                 if (result.error != null || result.label.isBlank()) {
@@ -298,7 +302,6 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
      */
     private fun classifyAndSaveFromGallery(sourceUri: Uri) {
         val localClassifier = classifier
-
         if (!localClassifier.isReady()) {
             _uiState.value = _uiState.value.copy(
                 error = ErrorHandler.getUserMessage(
@@ -336,6 +339,8 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                 // La clasificación usa el procesador C++ de TF Lite
                 // Pasarle la imagen original y la rotación es suficiente
                 val result = localClassifier.classify(rawBitmap, rotationDegrees)
+
+                AppLogger.debug(TAG, "RAW RESULT (Capture): ${result.label} (${(result.confidence * 100).toInt()}%)")
 
                 if (result.error != null || result.label.isBlank()) {
                     throw Exception(result.error?.message ?: "Clasificación fallida")

@@ -8,7 +8,6 @@ import com.tesis.potatodiseaseai.utils.ErrorHandler
 /**
  * ==========================================================================
  *  PT-U09 — Manejo de errores centralizado (ErrorHandler / AppError)
- *  Se ejecutan en la JVM local, sin dispositivo ni emulador.
  * ==========================================================================
  *  RNF cubierto: RNF-03 (jerarquía de errores y mensajes amigables)
  *  Verifica que la jerarquía sealed class AppError clasifica correctamente

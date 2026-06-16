@@ -53,7 +53,7 @@ fun HistoryScreen(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 actions = {
-                    // Botón para eliminar todo el historial (solo visible si hay análisis)
+                    // Botón para eliminar todo el historial
                     if (uiState.analisis.isNotEmpty()) {
                         IconButton(onClick = { viewModel.showDeleteAllDialog() }) {
                             Icon(
