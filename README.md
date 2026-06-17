@@ -16,4 +16,4 @@ Este proyecto es una aplicación móvil desarrollada para ayudar a los agriculto
 * **Hardware de prueba:** Redmi Note 14 Pro 5G.
 
 ## 📦 Instalación
-Puedes descargar el instalable directo desde la sección de [Releases](enlace-a-tu-release-aqui).
+Puedes descargar el instalable directo desde la sección de [Releases](https://github.com/Kevin17Vichi/PotatoDiseaseAI/releases).
