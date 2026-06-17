@@ -1,37 +1,44 @@
 # Potato Disease AI
 
-## Overview
-**Potato Disease AI** is an Android application designed to identify and classify potato plant diseases using artificial intelligence and on-device machine learning. This project was developed as part of a thesis ("Tesis") and focuses on evaluating the performance and accuracy of mobile-based image classification.
+## Descripción General
+**Potato Disease AI** es una aplicación para Android diseñada para identificar y clasificar enfermedades en plantas de papa utilizando inteligencia artificial y aprendizaje automático directamente en el dispositivo (On-Device). Este proyecto fue desarrollado como parte de un trabajo de titulación ("Tesis") y se enfoca en evaluar el rendimiento y la precisión de los modelos de clasificación de imágenes en dispositivos móviles.
 
-## Key Features
-- **Real-time Classification**: Utilizes a custom TensorFlow Lite model (`potato_classifier.tflite`) to analyze images of potato leaves and detect diseases.
-- **On-Device Inference**: Operates completely offline, ensuring fast response times and data privacy.
-- **Performance Monitoring**: Built-in tracking for critical metrics such as:
-  - Model load time
-  - Average inference time
-  - Memory (RAM) usage during execution
-- **Modern UI**: Built with Jetpack Compose for a smooth, reactive user experience.
-- **Camera Integration**: Seamless image capture and preview using the Android CameraX library.
-- **Local History**: Uses Room database to store local data.
+## Características Principales
+- **Clasificación en Tiempo Real**: Utiliza un modelo personalizado de TensorFlow Lite (`potato_classifier.tflite`) para analizar imágenes de hojas de papa y detectar posibles enfermedades.
+- **Inferencia en el Dispositivo (Offline)**: Funciona de manera completamente fuera de línea (sin internet), garantizando tiempos de respuesta rápidos y privacidad de los datos.
+- **Monitoreo de Rendimiento**: Seguimiento integrado de métricas críticas para la evaluación de la tesis, tales como:
+  - Tiempo de carga del modelo.
+  - Tiempo promedio de inferencia.
+  - Uso de memoria RAM durante la ejecución.
+- **Interfaz de Usuario Moderna**: Construida con Jetpack Compose para ofrecer una experiencia de usuario fluida, reactiva y accesible.
+- **Integración de Cámara**: Captura de imágenes y vista previa fluida utilizando la librería CameraX de Android.
+- **Historial Local**: Uso de la base de datos Room para almacenar resultados y datos de manera local.
 
-## Technologies & Architecture
-- **Language**: Kotlin
-- **UI Framework**: Jetpack Compose & Material 3
+## Tecnologías y Arquitectura
+- **Lenguaje**: Kotlin
+- **Framework de Interfaz (UI)**: Jetpack Compose y Material Design 3
 - **Machine Learning**: TensorFlow Lite Task Vision
-- **Camera**: Android CameraX
-- **Database**: Room
-- **Image Loading**: Coil
-- **Asynchronous Operations**: Kotlin Coroutines
+- **Cámara**: Android CameraX
+- **Base de Datos**: Room
+- **Carga de Imágenes**: Coil
+- **Operaciones Asíncronas**: Kotlin Coroutines
 - **Testing**: JUnit, Coroutines Test, Room Testing
 
-## Important Components
-- **`ImageClassifierHelper`**: The core component responsible for initializing the TFLite model, handling image preprocessing (resizing, cropping, rotation), executing inferences, and calculating performance metrics.
-- **`LabelNormalizer` / `ErrorHandler`**: Utility classes to maintain clean output labels and centralize error logging.
-- **`CameraPreview`**: Jetpack Compose component handling the live camera feed for immediate disease detection.
+## Componentes Importantes
+- **`ImageClassifierHelper`**: El componente central responsable de inicializar el modelo TFLite, manejar el preprocesamiento de las imágenes (redimensionamiento, recorte, rotación), ejecutar las inferencias y calcular las métricas de rendimiento.
+- **`LabelNormalizer` / `ErrorHandler`**: Clases de utilidad para mantener las etiquetas de los resultados estandarizadas y centralizar el manejo de errores.
+- **`CameraPreview`**: Componente de Jetpack Compose que gestiona la transmisión en vivo de la cámara para la detección inmediata de enfermedades.
 
-## Getting Started
+## Cómo empezar (Getting Started)
 
-### Prerequisites
-- **Android Studio** (Latest stable version recommended)
-- **Minimum SDK**: API 21 (Android 5.0)
-- **Target SDK**: API 34 (Android 14)
+### Requisitos Previos
+- **Android Studio** (Se recomienda la última versión estable).
+- **SDK Mínimo**: API 21 (Android 5.0 Lollipop).
+- **SDK Objetivo**: API 34 (Android 14).
+
+### Ejecutar la Aplicación
+1. Clona este repositorio en tu máquina local.
+2. Abre el proyecto en Android Studio.
+3. Sincroniza el proyecto con los archivos de Gradle para descargar todas las dependencias necesarias (TensorFlow Lite, CameraX, Compose, etc.).
+4. Conecta un dispositivo Android físico o inicia un emulador que tenga soporte para cámara.
+5. Compila y ejecuta la aplicación (Presionando `Shift + F10` o el botón de *Run*).
