@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ContactSupport
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.*
@@ -374,7 +375,7 @@ private fun ManualUsuarioCard(
                 }
             }
             Icon(
-                imageVector = Icons.Outlined.OpenInNew,
+                imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                 contentDescription = "Abrir PDF",
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(Dimensions.iconSizeSmall)

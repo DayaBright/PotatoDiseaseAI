@@ -160,7 +160,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
      */
     private fun classifyAndSave(sourceUri: Uri) {
         val localClassifier = classifier
-          if (!localClassifier.isReady()) {
+        if (!localClassifier.isReady()) {
             _uiState.value = _uiState.value.copy(
                 error = ErrorHandler.getUserMessage(
                     com.tesis.potatodiseaseai.utils.AppError.ClassificationError()
