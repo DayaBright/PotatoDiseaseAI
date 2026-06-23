@@ -4,7 +4,6 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.tesis.potatodiseaseai.data.repository.AnalisisRepository
@@ -91,17 +90,38 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
 
         viewModelScope.launch(Dispatchers.IO) {
             var rawBitmap: Bitmap? = null
+            var rotatedBitmap: Bitmap? = null
+            var croppedBitmap: Bitmap? = null
             try {
                 val ctx = getApplication<Application>().applicationContext
                 rawBitmap = imageProxy.toBitmap()
 
                 val rotationDegrees = imageProxy.imageInfo.rotationDegrees
                 
-                // La rotación y el recorte ahora los maneja el ImageProcessor
-                val result = localClassifier.classify(rawBitmap, rotationDegrees)
+                // 1. Rotar primero para que coincida con lo que ve el usuario en pantalla
+                rotatedBitmap = if (rotationDegrees != 0) {
+                    val matrix = android.graphics.Matrix()
+                    matrix.postRotate(rotationDegrees.toFloat())
+                    Bitmap.createBitmap(rawBitmap, 0, 0, rawBitmap.width, rawBitmap.height, matrix, true)
+                } else rawBitmap
+
+                // 2. Recortar al área del recuadro guía visible en pantalla
+                //    Esto es CLAVE: sin este recorte, el modelo recibe el frame completo
+                //    donde la hoja puede ser solo el 30-40% de la imagen total → "no papa"
+                val displayMetrics = ctx.resources.displayMetrics
+                croppedBitmap = com.tesis.potatodiseaseai.utils.ImageUtils.cropToPreviewSquare(
+                    source = rotatedBitmap,
+                    screenWidth = displayMetrics.widthPixels,
+                    screenHeight = displayMetrics.heightPixels,
+                    guideFraction = 0.85f,
+                    verticalOffsetDp = 60f,
+                    density = displayMetrics.density
+                )
+
+                // 3. Clasificar solo el contenido del recuadro guía (sin rotación extra, ya fue rotado)
+                val result = localClassifier.classify(croppedBitmap, 0)
 
                 AppLogger.debug(TAG, "RAW RESULT (Live): ${result.label} (${(result.confidence * 100).toInt()}%)")
-
 
                 if (result.error == null && result.label.isNotBlank()) {
                     // El LabelNormalizer convierte "z_no_potato" → "z no potato" (reemplaza _ por espacios)
@@ -117,6 +137,8 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
             } catch (e: Exception) {
                 AppLogger.error(TAG, "Error en live analysis: ${e.message}")
             } finally {
+                if (croppedBitmap != null && croppedBitmap !== rotatedBitmap) croppedBitmap.recycle()
+                if (rotatedBitmap != null && rotatedBitmap !== rawBitmap) rotatedBitmap.recycle()
                 rawBitmap?.recycle()
                 imageProxy.close()
             }
@@ -182,47 +204,30 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                     BitmapFactory.decodeStream(stream)
                 } ?: throw java.io.IOException("No se pudo decodificar la imagen")
 
-                // ── PASO 2: Extraer orientación EXIF (sin rotar en memoria) ──
-                var rotationDegrees = 0
-                ctx.contentResolver.openInputStream(sourceUri)?.use { stream ->
-                    val exif = ExifInterface(stream)
-                    val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)
-                    rotationDegrees = when (orientation) {
-                        ExifInterface.ORIENTATION_ROTATE_90 -> 90
-                        ExifInterface.ORIENTATION_ROTATE_180 -> 180
-                        ExifInterface.ORIENTATION_ROTATE_270 -> 270
-                        else -> 0
-                    }
-                }
+                // ── PASO 3: Rotar y recortar al recuadro guía ANTES de clasificar ──
+                rotatedBitmap = com.tesis.potatodiseaseai.utils.ImageUtils.fixRotationInMemory(ctx, sourceUri, rawBitmap)
+                
+                val displayMetrics = ctx.resources.displayMetrics
+                croppedBitmap = com.tesis.potatodiseaseai.utils.ImageUtils.cropToPreviewSquare(
+                    source = rotatedBitmap,
+                    screenWidth = displayMetrics.widthPixels,
+                    screenHeight = displayMetrics.heightPixels,
+                    guideFraction = 0.85f,
+                    verticalOffsetDp = 60f,
+                    density = displayMetrics.density
+                )
 
-                // ── PASO 3: Clasificar ──
-                // ImageClassifierHelper manejará internamente la rotación y el recorte usando ImageProcessor (C++)
-                val result = localClassifier.classify(rawBitmap, rotationDegrees)
+                // ── PASO 4: Clasificar solo el contenido del recuadro guía ──
+                val result = localClassifier.classify(croppedBitmap, 0)
 
-                AppLogger.debug(TAG, "RAW RESULT (Live): ${result.label} (${(result.confidence * 100).toInt()}%)")
+                AppLogger.debug(TAG, "RAW RESULT (Capture): ${result.label} (${(result.confidence * 100).toInt()}%)")
 
                 // Validar que la clasificación fue exitosa
                 if (result.error != null || result.label.isBlank()) {
                     throw Exception(result.error?.message ?: "Clasificación fallida")
                 }
 
-                // Para guardar la imagen: aplicamos la rotación y el recorte
-                rotatedBitmap = com.tesis.potatodiseaseai.utils.ImageUtils.fixRotationInMemory(ctx, sourceUri, rawBitmap)
-                
-                // Mapear el recorte exactamente al recuadro visual de la cámara
-                val displayMetrics = ctx.resources.displayMetrics
-                val screenWidth = displayMetrics.widthPixels
-                val screenHeight = displayMetrics.heightPixels
-                val density = displayMetrics.density
-                
-                croppedBitmap = com.tesis.potatodiseaseai.utils.ImageUtils.cropToPreviewSquare(
-                    source = rotatedBitmap,
-                    screenWidth = screenWidth,
-                    screenHeight = screenHeight,
-                    guideFraction = 0.85f,
-                    verticalOffsetDp = 60f,
-                    density = density
-                )
+                // croppedBitmap ya fue recortado al recuadro guía en el paso 3
 
                 val isNoPotatoClass = result.label == "z no potato"
                 // Si en vivo decía "No se detecta hoja", forzamos que la captura también
@@ -323,31 +328,17 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
                     BitmapFactory.decodeStream(stream)
                 } ?: throw java.io.IOException("No se pudo decodificar la imagen")
 
-                // ── PASO 2: Extraer orientación EXIF ──
-                var rotationDegrees = 0
-                ctx.contentResolver.openInputStream(sourceUri)?.use { stream ->
-                    val exif = ExifInterface(stream)
-                    val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)
-                    rotationDegrees = when (orientation) {
-                        ExifInterface.ORIENTATION_ROTATE_90 -> 90
-                        ExifInterface.ORIENTATION_ROTATE_180 -> 180
-                        ExifInterface.ORIENTATION_ROTATE_270 -> 270
-                        else -> 0
-                    }
-                }
+                // ── PASO 2: Rotar según EXIF y clasificar ──
+                processedBitmap = com.tesis.potatodiseaseai.utils.ImageUtils.fixRotationInMemory(ctx, sourceUri, rawBitmap)
+                val result = localClassifier.classify(processedBitmap, 0)
 
-                // La clasificación usa el procesador C++ de TF Lite
-                // Pasarle la imagen original y la rotación es suficiente
-                val result = localClassifier.classify(rawBitmap, rotationDegrees)
-
-                AppLogger.debug(TAG, "RAW RESULT (Capture): ${result.label} (${(result.confidence * 100).toInt()}%)")
+                AppLogger.debug(TAG, "RAW RESULT (Gallery): ${result.label} (${(result.confidence * 100).toInt()}%)")
 
                 if (result.error != null || result.label.isBlank()) {
                     throw Exception(result.error?.message ?: "Clasificación fallida")
                 }
 
-                // Para guardar en historial: rotamos y recortamos para la UI de Android usando ImageUtils centralizado
-                processedBitmap = com.tesis.potatodiseaseai.utils.ImageUtils.fixRotationInMemory(ctx, sourceUri, rawBitmap)
+                // Para guardar en historial: letterbox para mantener proporciones
                 val targetSize = maxOf(processedBitmap.width, processedBitmap.height).coerceAtMost(1024)
                 val savedBitmap = com.tesis.potatodiseaseai.utils.ImageUtils.letterboxBitmap(processedBitmap, targetSize)
 

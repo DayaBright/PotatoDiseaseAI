@@ -10,9 +10,9 @@ import com.tesis.potatodiseaseai.utils.LabelNormalizer
 import com.tesis.potatodiseaseai.utils.ErrorHandler          
 import com.tesis.potatodiseaseai.utils.AppError              
 import com.tesis.potatodiseaseai.utils.AppLogger
-import org.tensorflow.lite.support.image.ImageProcessor
-import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp
-import org.tensorflow.lite.support.image.ops.Rot90Op
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Matrix
 
 class ImageClassifierHelper(context: Context) {
 
@@ -135,22 +135,28 @@ class ImageClassifierHelper(context: Context) {
 
 
         return try {
-            var tensorImage = TensorImage.fromBitmap(bitmap)
-            
-            // Procesamiento de imagen unificado usando ImageProcessor
-            val numRotation = rotationDegrees / 90
-            val minLength = minOf(bitmap.width, bitmap.height)
-            
-            val imageProcessor = ImageProcessor.Builder()
-                .add(ResizeWithCropOrPadOp(minLength, minLength)) // Recorte centrado
-                .add(Rot90Op(numRotation))
-                .build()
-                
-            tensorImage = imageProcessor.process(tensorImage)
+            // 1. Rotar primero si es necesario (corrige orientación del sensor de cámara)
+            val rotatedBitmap = if (rotationDegrees != 0) {
+                val matrix = Matrix()
+                matrix.postRotate(rotationDegrees.toFloat())
+                Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+            } else bitmap
+
+            // 2. Letterbox: añade padding gris (114,114,114) igual que en el entrenamiento Python
+            //    Esto preserva el aspecto real de la hoja sin recortar, a diferencia del
+            //    ResizeWithCropOrPadOp que solo recortaba el centro geométrico del frame.
+            val letterboxed = letterbox(rotatedBitmap, INPUT_SIZE)
+
+            // 3. Inferencia directa con el bitmap ya preparado
+            val tensorImage = TensorImage.fromBitmap(letterboxed)
 
             val startTime = System.nanoTime()
             val results = localClassifier.classify(tensorImage)
             val endTime = System.nanoTime()
+
+            // Liberar bitmaps intermedios
+            if (rotatedBitmap !== bitmap) rotatedBitmap.recycle()
+            letterboxed.recycle()
 
             val inferenceTimeMs = (endTime - startTime) / 1_000_000
 
@@ -245,6 +251,31 @@ class ImageClassifierHelper(context: Context) {
         }
     }
 
+    /**
+     * Letterbox: equivalente exacto de letterbox_pil() del notebook Python.
+     * Rellena con gris medio (114, 114, 114) = MEAN_COLOR usado en el entrenamiento.
+     * Preserva el aspecto de la imagen original sin recortar contenido.
+     */
+    private fun letterbox(src: Bitmap, targetSize: Int): Bitmap {
+        val w = src.width
+        val h = src.height
+        val side = maxOf(w, h)
+
+        // Canvas cuadrado con color de relleno igual al del entrenamiento
+        val squared = Bitmap.createBitmap(side, side, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(squared)
+        canvas.drawColor(Color.rgb(114, 114, 114))
+
+        val left = (side - w) / 2
+        val top = (side - h) / 2
+        canvas.drawBitmap(src, left.toFloat(), top.toFloat(), null)
+
+        // Redimensionar a targetSize × targetSize
+        val result = Bitmap.createScaledBitmap(squared, targetSize, targetSize, true)
+        squared.recycle()
+        return result
+    }
+
     fun clear() {
         try {
             classifier?.close()
@@ -260,5 +291,6 @@ class ImageClassifierHelper(context: Context) {
 
     companion object {
         private const val TAG = "ImageClassifierHelper"
+        private const val INPUT_SIZE = 224 // Tamaño de entrada del modelo MobileNetV2
     }
 }
