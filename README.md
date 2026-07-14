@@ -3,6 +3,17 @@
 ## Descripción General
 **Potato Disease AI** es una aplicación para Android diseñada para identificar y clasificar enfermedades en plantas de papa utilizando inteligencia artificial y aprendizaje automático directamente en el dispositivo (On-Device). Este proyecto fue desarrollado como parte de un trabajo de titulación ("Tesis") y se enfoca en evaluar el rendimiento y la precisión de los modelos de clasificación de imágenes en dispositivos móviles.
 
+## Resultados Clave
+ 
+| Métrica | Valor |
+|---|---|
+| Accuracy | 96.70% |
+| Macro F1-score | 96.65% |
+| Clases clasificadas | 8 |
+| Tamaño del modelo (APK) | 18 MB |
+| Latencia de inferencia | 106 ms |
+| Arquitectura del modelo | MobileNetV2 + cuantización INT8 (TFLite) |
+
 ## Características Principales
 - **Clasificación en Tiempo Real**: Utiliza un modelo personalizado de TensorFlow Lite (`potato_classifier.tflite`) para analizar imágenes de hojas de papa y detectar posibles enfermedades.
 - **Inferencia en el Dispositivo (Offline)**: Funciona de manera completamente fuera de línea (sin internet), garantizando tiempos de respuesta rápidos y privacidad de los datos.
