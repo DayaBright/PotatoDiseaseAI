@@ -15,24 +15,30 @@
 | Arquitectura del modelo | MobileNetV2 + cuantización INT8 (TFLite) |
 
 ## Características Principales
-- **Clasificación en Tiempo Real**: Utiliza un modelo personalizado de TensorFlow Lite (`potato_classifier.tflite`) para analizar imágenes de hojas de papa y detectar posibles enfermedades.
-- **Inferencia en el Dispositivo (Offline)**: Funciona de manera completamente fuera de línea (sin internet), garantizando tiempos de respuesta rápidos y privacidad de los datos.
-- **Monitoreo de Rendimiento**: Seguimiento integrado de métricas críticas para la evaluación de la tesis, tales como:
-  - Tiempo de carga del modelo.
-  - Tiempo promedio de inferencia.
-  - Uso de memoria RAM durante la ejecución.
-- **Interfaz de Usuario Moderna**: Construida con Jetpack Compose para ofrecer una experiencia de usuario fluida, reactiva y accesible.
-- **Integración de Cámara**: Captura de imágenes y vista previa fluida utilizando la librería CameraX de Android.
-- **Historial Local**: Uso de la base de datos Room para almacenar resultados y datos de manera local.
+- **Clasificación en tiempo real**: modelo TensorFlow Lite (`potato_classifier.tflite`, MobileNetV2 INT8) que analiza imágenes de hojas de papa y detecta 8 categorías, incluyendo una clase de rechazo para imágenes fuera de dominio.
+- **Inferencia 100% offline**: sin dependencia de conexión a internet, pensado para zonas rurales con conectividad limitada.
+- **Preprocesamiento consistente (letterbox)**: el pipeline de preprocesamiento en Android replica el usado en entrenamiento (letterbox con padding de color medio, RGB 113,123,96), evitando el desajuste de dominio que se detectó entre el recorte central inicial de Android y el preprocesamiento de Python.
+- **Monitoreo de rendimiento**: seguimiento de tiempo de carga del modelo, tiempo de inferencia y uso de RAM, usado como instrumento de evaluación de la tesis.
+- **Interfaz moderna**: construida con Jetpack Compose.
+- **Captura de imágenes**: integración con CameraX.
+- **Historial local**: persistencia de resultados con Room.
 
-## Tecnologías y Arquitectura
+## Arquitectura de Software
+ 
+La aplicación sigue el patrón **MVVM (Model-View-ViewModel)**:
+ 
+- **View**: composables de Jetpack Compose.
+- **ViewModel**: gestiona el estado de la UI y coordina la lógica de inferencia.
+- **Model**: `ImageClassifierHelper` (inferencia TFLite) + entidades Room (persistencia local).
+## Tecnologías
+ 
 - **Lenguaje**: Kotlin
-- **Framework de Interfaz (UI)**: Jetpack Compose y Material Design 3
-- **Machine Learning**: TensorFlow Lite Task Vision
+- **UI**: Jetpack Compose, Material Design 3
+- **Machine Learning**: TensorFlow Lite Task Vision (MobileNetV2, cuantizado INT8)
 - **Cámara**: Android CameraX
-- **Base de Datos**: Room
-- **Carga de Imágenes**: Coil
-- **Operaciones Asíncronas**: Kotlin Coroutines
+- **Base de datos**: Room
+- **Carga de imágenes**: Coil
+- **Concurrencia**: Kotlin Coroutines
 - **Testing**: JUnit, Coroutines Test, Room Testing
 
 ## Componentes Importantes
