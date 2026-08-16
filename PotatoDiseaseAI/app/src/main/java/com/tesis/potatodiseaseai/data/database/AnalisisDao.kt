@@ -18,12 +18,12 @@ interface AnalisisDao {
     @Query("DELETE FROM analisis")
     suspend fun deleteAll()
 
-    /** Todos los análisis con su enfermedad relacionada, orden cronológico inverso */
+    /** Todos los análisis con su enfermedad relacionada */
     @Transaction
     @Query("SELECT * FROM analisis ORDER BY fechaHora DESC")
     fun getAllAnalisis(): Flow<List<AnalisisConEnfermedad>>
 
-    /** Versión suspend (no Flow) para obtener la lista antes de eliminar */
+    /** Versión suspend para obtener la lista antes de eliminar */
     @Transaction
     @Query("SELECT * FROM analisis ORDER BY fechaHora DESC")
     suspend fun getAllAnalisisList(): List<AnalisisConEnfermedad>

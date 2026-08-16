@@ -78,13 +78,9 @@ object DatabaseMigrations {
 
     /**
      * Migración v3 → v4.
-     * Cambios sustanciales:
      *  1. Tabla enfermedades: se eliminan manifestacionesVisuales, signosClave, recomendaciones
      *     y se agregan tipoAgente, patronVisual, prevencion, controlQuimico, controlBiologico.
-     *  2. Tabla analisis: se elimina la columna imagenGradcamReal.
-     *
-     * Ambas tablas se recrean con el nuevo esquema (SQLite no soporta DROP COLUMN
-     * en todas las versiones, por lo que se usa la estrategia de recreación).
+     *  2. Tabla analisis: se elimina la columna imagenGradcamReal
      */
     val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(db: SupportSQLiteDatabase) {

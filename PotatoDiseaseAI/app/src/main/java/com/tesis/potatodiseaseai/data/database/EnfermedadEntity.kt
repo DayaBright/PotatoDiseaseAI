@@ -5,7 +5,6 @@ import androidx.room.PrimaryKey
 
 /**
  * Tabla ENFERMEDADES — Biblioteca estática de patologías de papa.
- * Se precarga con datos semilla al crear la base de datos.
  *
  * Campos verificados por reportes académicos:
  *  - agenteCausal: organismo que causa la enfermedad

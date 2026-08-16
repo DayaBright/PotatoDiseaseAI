@@ -6,10 +6,9 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
- * Tabla ANALISIS — Historial de clasificaciones del usuario.
+ * Historial de clasificaciones del usuario.
  *
  * Cada registro almacena la imagen capturada, la enfermedad detectada
- * (por FK a enfermedades) y la precisión del modelo.
  */
 @Entity(
     tableName = "analisis",
